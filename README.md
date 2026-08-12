@@ -119,7 +119,8 @@ Users are solely responsible for their actions and must ensure compliance with a
 
 ## License
 
-See the `LICENSE` file for details.
+- **Code**: Licensed under Mozilla Public License 2.0 (MPL-2.0) - see `LICENSE` file for details.
+- **Documentation**: Licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA-4.0) - see `LICENSE-DOCUMENTATION` file for details.
 
 ## Contact Us
 
