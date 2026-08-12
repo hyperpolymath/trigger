@@ -1,0 +1,188 @@
+= Trigger: Telegram Channel Reporting Tool
+:description: Telegram channel reporting utility with multi-account management
+:author: Original by 2nixx (https://t.me/NetworkCriminals[NetworkCriminals])
+:revdate: 2026-08-13
+:revnumber: 1.0.0
+:language: en
+:toc: auto
+:toclevels: 3
+:icons: font
+:source-highlighter: pygments
+
+== Introduction
+
+*Trigger* is a social media reporting utility featuring multi-account management, 
+persistent sessions, proxy support, configurable reporting options, automatic 
+FloodWait handling, and interactive TUI designed for efficient account and reporting 
+workflow management and automation.
+
+This is an Ada/SPARK rewrite of the original *Ripper* tool by *2nixx* (Telegram: 
+https://t.me/NetworkCriminals[@NetworkCriminals]).
+
+=== Original Author Acknowledgement
+
+[.acknowledgement]
+This project is derived from *Ripper* by *2nixx* (Telegram: https://t.me/NetworkCriminals[@NetworkCriminals]).
+
+The original MIT-licensed code has been rewritten in Ada/SPARK to provide:
+
+* Formal verification capabilities (SPARK)
+* Strong typing for session management
+* Safety-critical guarantees for multi-account operations
+* Better alignment with hyperpolymath standards
+
+All credit for the original design and concept goes to 2nixx and the NetworkCriminals community.
+
+== Features
+
+* Multi-account management (add, remove, list)
+* Session-based authentication with persistent login
+* Optional AES session encryption
+* Sequential reporting using all active accounts
+* Interactive terminal menu
+* Proxy support (SOCKS5/HTTP)
+* Automatic FloodWait handling with smart retry
+* Configurable report reason (spam, violence, pornography, etc.)
+
+== Architecture
+
+This implementation uses:
+
+* *Ada/SPARK* for the core application logic and session management
+* *Zig* for FFI bindings to Telegram API via unified-hexadeca-api
+* *Idris2* for API layer abstractions where applicable
+
+=== License
+
+This repository uses a dual-licensing structure:
+
+* *Code*: Mozilla Public License 2.0 (MPL-2.0) - see link:LICENSE[LICENSE] file
+* *Documentation*: Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA-4.0) - see link:LICENSES/CC-BY-SA-4.0.txt[LICENSES/CC-BY-SA-4.0.txt]
+
+=== Requirements
+
+* Ada/SPARK compiler (GNAT Community Edition or later)
+* Zig compiler (for FFI bindings)
+* Idris2 compiler (for API layer, if used)
+* Telegram API credentials (`api_id` and `api_hash`)
+* Valid Telegram account(s) with phone number
+
+== Installation
+
+=== From Source
+
+. Clone the repository:
+   ----
+   git clone https://github.com/hyperpolymath/trigger.git
+   cd trigger
+   ----
+
+. Build using GNAT:
+   ----
+   gprbuild -P trigger.gpr
+   ----
+
+. Or build with Alire (if configured):
+   ----
+   alr build
+   ----
+
+== Usage
+
+Run the compiled binary:
+
+----
+./obj/trigger
+----
+
+=== Main Menu
+
+----
+  ╔═══════════════════════════════════════════════════════════╗
+  ║                    Trigger - Telegram Reporting Tool        ║
+  ║              Original concept by T.me/NetworkCriminals      ║
+  ╠═══════════════════════════════════════════════════════════╣
+  ║  1. Add Account                                           ║
+  ║  2. List Accounts                                         ║
+  ║  3. Remove Account                                        ║
+  ║  4. Start Reporting                                       ║
+  ║  5. Set API Credentials                                   ║
+  ║  6. Exit                                                 ║
+  ╚═══════════════════════════════════════════════════════════╝
+----
+
+=== Add Account
+
+Select option `1` and provide:
+
+* Phone number with country code (e.g., `+989123456789`)
+* API ID and API hash (from https://my.telegram.org/apps)
+* Verification code sent by Telegram
+
+Session files are stored in the `sessions/` folder.
+
+=== Start Reporting
+
+Select option `4` and provide:
+
+* Channel username (without `@`)
+* Number of recent messages to report (default: `3`)
+* Delay between reports in seconds (default: `2`)
+* Report reason (default: `spam`)
+
+The tool processes all active accounts sequentially.
+
+== Dependencies
+
+* *Telethon equivalent*: Implemented via Zig FFI with unified-hexadeca-api
+* *Colorama equivalent*: Terminal color support in Ada
+* *Cryptography*: AES encryption via SPARK-verified implementations
+
+== FAQ
+
+=== Is this tool allowed by Telegram?
+
+Reporting spam or policy-violating content is permitted under Telegram's Terms of Service. 
+This tool automates the reporting process.
+
+=== Will my account get banned?
+
+Using this tool responsibly should not result in a ban. Telegram may impose temporary 
+`FloodWait` restrictions, which the tool handles automatically.
+
+=== Can I use multiple accounts?
+
+Yes. Add multiple accounts and the tool will use all active accounts sequentially.
+
+=== How do I get `api_id` and `api_hash`?
+
+Visit https://my.telegram.org/apps and create a new application.
+
+== Contributing
+
+See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] for contribution guidelines.
+
+== Disclaimer
+
+[.disclaimer]
+*Important*: This project is developed for educational and research purposes only. 
+It is intended to demonstrate the technical aspects of Telegram's reporting mechanism 
+and multi-account automation using Ada/SPARK.
+
+The author does not endorse or encourage any misuse of this tool, including but not limited to:
+
+* Reporting legitimate content
+* Harassing individuals or groups
+* Violating Telegram's Terms of Service
+
+Users are solely responsible for their actions and must ensure compliance with all 
+applicable laws and regulations. The author assumes no liability for any consequences 
+arising from the use of this software.
+
+== See Also
+
+* Original Ripper: https://github.com/2nixx/Ripper
+* NetworkCriminals Telegram: https://t.me/NetworkCriminals
+* Ada/SPARK: https://www.adacore.com
+* Zig: https://ziglang.org
+* Idris2: https://idris-lang.org

@@ -1,0 +1,103 @@
+= Contributing to Trigger
+:description: Guidelines for contributing to the Trigger project
+:author: hyperpolymath
+:revdate: 2026-08-13
+:language: en
+:toc: auto
+
+== Introduction
+
+Thank you for your interest in contributing to *Trigger*! This document outlines 
+the guidelines for contributing to this project.
+
+== Code of Conduct
+
+By participating in this project, you agree to abide by the 
+link:CODE_OF_CONDUCT.md[Code of Conduct].
+
+== How to Contribute
+
+=== Reporting Issues
+
+* Use the GitHub issue tracker to report bugs
+* Include detailed information about the issue
+* Provide steps to reproduce
+* Include relevant logs and configuration
+
+=== Suggesting Features
+
+* Open a feature request issue on GitHub
+* Describe the use case and benefits
+* Discuss with maintainers before implementing
+
+=== Submitting Changes
+
+. Fork the repository
+. Create a feature branch (`git checkout -b feature/amazing-feature`)
+. Make your changes
+. Add tests for new functionality
+. Ensure all existing tests pass
+. Commit your changes (`git commit -m 'Add amazing feature'`)
+. Push to the branch (`git push origin feature/amazing-feature`)
+. Open a Pull Request
+
+=== Code Review Process
+
+* All PRs require at least one approval from a maintainer
+* CI checks must pass
+* SPARK proofs must verify (for Ada/SPARK code)
+* Code must follow project standards
+
+== Development Standards
+
+=== Ada/SPARK Code
+
+* Use SPARK for safety-critical components
+* Include preconditions and postconditions
+* Use strong typing
+* Handle all exceptions
+* Include comprehensive documentation
+
+=== Zig Code
+
+* Follow Zig language conventions
+* Use allocators properly
+* Handle errors explicitly
+* Document all exported functions
+
+=== Idris2 Code
+
+* Use dependent types where appropriate
+* Maintain purity where possible
+* Document all exported definitions
+
+=== General
+
+* Follow existing code style
+* Use meaningful variable and function names
+* Include comments for complex logic
+* Keep commits atomic and well-described
+
+== Testing
+
+* All code must be tested
+* Include unit tests for new functionality
+* Test edge cases and error conditions
+* Maintain existing test coverage
+
+== License
+
+By contributing to this project, you agree to license your contributions under the 
+same licenses as the project:
+
+* Code: Mozilla Public License 2.0 (MPL-2.0)
+* Documentation: Creative Commons Attribution-ShareAlike 4.0 (CC-BY-SA-4.0)
+
+See link:LICENSE[LICENSE] and link:LICENSES[LICENSES] for full license texts.
+
+== Acknowledgement
+
+All contributors retain copyright to their contributions. By submitting code, you 
+agree to license it under the project's licenses as described above.
+
+The original project concept and design is by 2nixx (T.me/NetworkCriminals).

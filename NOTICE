@@ -1,0 +1,41 @@
+Trigger - Attribution Notice
+==================================
+
+This project is derived from "Ripper" by 2nixx (T.me/NetworkCriminals).
+
+Original Ripper Project:
+- Repository: https://github.com/2nixx/Ripper
+- Author: 2nixx
+- Telegram: https://t.me/NetworkCriminals
+
+The original project was licensed under the MIT License. This project is a complete
+rewrite in Ada/SPARK, Zig, and Idris2 to provide:
+
+1. Formal verification capabilities (SPARK)
+2. Strong typing for session management
+3. Safety-critical guarantees for multi-account operations
+4. Better alignment with hyperpolymath standards
+
+All credit for the original design, concept, and feature set goes to 2nixx and the
+NetworkCriminals community.
+
+Original Features (as designed by 2nixx):
+- Multi-account management (add, remove, list)
+- Session-based authentication with persistent login
+- Optional AES session encryption
+- Sequential reporting using all active accounts
+- Interactive terminal menu with colored output
+- Proxy support (SOCKS5/HTTP)
+- Automatic FloodWait handling with smart retry
+- Configurable report reason (spam, violence, pornography, etc.)
+
+Implementation Notes:
+- Core logic: Ada/SPARK for safety and verification
+- Telegram API bindings: Zig with unified-hexadeca-api
+- API layer abstractions: Idris2 for type safety
+
+Copyright and Licensing:
+- Code: Mozilla Public License 2.0 (MPL-2.0) - see LICENSE file
+- Documentation: Creative Commons Attribution-ShareAlike 4.0 (CC-BY-SA-4.0) - see LICENSES/CC-BY-SA-4.0.txt
+
+This NOTICE file must be preserved in all distributions of this software.

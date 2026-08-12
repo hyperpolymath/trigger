@@ -1,0 +1,45 @@
+#  Trigger - Git Attributes File
+#  
+#  Specifies attributes for git operations
+
+#  Text files should use CRLF line endings on Windows, LF on Unix
+* text=auto
+
+#  Ensure line endings are consistent
+*.adb text eol=lf
+*.ads text eol=lf
+*.zig text eol=lf
+*.idr text eol=lf
+*.adoc text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+#  Binary files
+*.session binary
+*.sessionj binary
+*.so binary
+*.dll binary
+*.dylib binary
+
+#  License files should be treated as text
+LICENSE text
+LICENSES/* text
+
+#  Merge strategies
+*.adb merge=union
+*.ads merge=union
+*.zig merge=union
+*.idr merge=union
+
+#  Diff strategies
+*.adb diff
+*.ads diff
+*.zig diff
+*.idr diff
+
+#  Linguist language detection
+*.adb linguist-language=Ada
+*.ads linguist-language=Ada
+*.zig linguist-language=Zig
+*.idr linguist-language=Idris
+*.adoc linguist-language=AsciiDoc

@@ -1,0 +1,54 @@
+#  Trigger - Editor Config File
+#  
+#  Provides consistent editor settings across different editors
+#  See https://editorconfig.org for details
+
+root = true
+
+#  All files
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 3
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+#  Ada files
+[*.adb]
+[*.ads]
+indent_size = 3
+
+#  Zig files
+[*.zig]
+indent_size = 4
+tab_width = 4
+
+#  Idris files
+[*.idr]
+indent_size = 2
+
+#  AsciiDoc files
+[*.adoc]
+indent_size = 2
+
+#  Markdown files
+[*.md]
+indent_size = 2
+
+#  Shell scripts
+[*.sh]
+indent_size = 2
+
+#  Makefile
+[Makefile]
+indent_style = tab
+
+#  JSON files
+[*.json]
+indent_size = 2
+
+#  YAML files
+[*.yml]
+[*.yaml]
+indent_size = 2

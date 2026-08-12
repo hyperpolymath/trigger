@@ -1,0 +1,93 @@
+--  Trigger - Telegram Reporting Tool
+--  Ada/SPARK Project File
+--  
+--  This project implements a Telegram channel reporting utility
+--  with multi-account management, persistent sessions, and
+--  automatic FloodWait handling.
+--  
+--  Original concept by 2nixx (T.me/NetworkCriminals)
+--  Rewritten in Ada/SPARK for safety and verification
+
+project Trigger is
+
+   --  Project configuration
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Executable_Dir use "bin";
+   for Executable ("trigger") use "trigger.adb";
+   for Main use ("trigger.adb");
+
+   --  Compiler options for SPARK verification
+   package Compiler is
+      for Default_Switches ("Ada") use (
+         "-gnatwa",      --  Activate all optional warnings
+         "-gnatwe",      --  Warnings as errors
+         "-gnata",       --  Assertions enabled
+         "-gnatV",       --  Verbose error messages
+         "-gnatN",       --  Enable inlining
+         "-gnato",       --  Enable overflow checks
+         "-g",           --  Debug information
+         "-O2"           --  Optimization level 2
+      );
+   end Compiler;
+
+   --  SPARK specific configuration
+   package Spark is
+      for Proof_Level use "2";  --  Full proof
+      for Assert_Level use "2";  --  Runtime checks
+   end Spark;
+
+   --  Source files
+   for Source_Files use (
+      "trigger/trigger.adb",
+      "trigger/trigger.ads",
+      --  Configuration
+      "trigger/config/config.adb",
+      "trigger/config/config.ads",
+      --  Session management
+      "trigger/session/session_manager.adb",
+      "trigger/session/session_manager.ads",
+      "trigger/session/account_types.adb",
+      "trigger/session/account_types.ads",
+      --  Reporting
+      "trigger/reporting/reporter.adb",
+      "trigger/reporting/reporter.ads",
+      --  Utilities
+      "trigger/utils/logging.adb",
+      "trigger/utils/logging.ads",
+      "trigger/utils/crypto.adb",
+      "trigger/utils/crypto.ads",
+      "trigger/utils/terminal.adb",
+      "trigger/utils/terminal.ads"
+   );
+
+   --  Library dependencies
+   --  For Telethon-like functionality via Zig FFI
+   for Externally_Built use ("zig");
+
+   --  Build profiles
+   type Build_Profile is ("debug", "release");
+   for Build_Profiles use ("debug", "release");
+
+   package Build is
+      for Default_Build_Profile use "release";
+   end Build;
+
+   --  Profile-specific options
+   package Profile_Debug is
+      for Default_Switches ("Ada") use (
+         Compiler.Default_Switches ("Ada") & 
+         "-g",
+         "-O0"
+      );
+   end Profile_Debug;
+
+   package Profile_Release is
+      for Default_Switches ("Ada") use (
+         Compiler.Default_Switches ("Ada") & 
+         "-O3",
+         "-gnatn"  --  Disable assertions in release
+      );
+   end Profile_Release;
+
+end Trigger;

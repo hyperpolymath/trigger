@@ -1,0 +1,280 @@
+= Trigger Architecture
+:description: Architecture overview of the Trigger application
+:author: hyperpolymath
+:revdate: 2026-08-13
+:language: en
+:toc: auto
+
+== Overview
+
+Trigger is a Telegram channel reporting utility designed for multi-account 
+management, persistent sessions, and automated reporting workflows. This document 
+describes the architecture of the Ada/SPARK rewrite.
+
+== High-Level Architecture
+
+Trigger follows a layered architecture with clear separation of concerns:
+
+----
+┌─────────────────────────────────────────────────────────────┐
+│                    Trigger Application                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   Main TUI  │───▶│  Session    │───▶│   Reporting  │     │
+│  │   (Ada)     │    │  Manager    │    │   (Zig/FFI)  │     │
+│  └─────────────┘    │  (Ada/SPARK)│    └─────────────┘     │
+│                    └─────────────┘                           │
+│                         ▲        ▲                           │
+│                         │        │                           │
+│                    ┌────┴        └────┐                      │
+│                    │   Configuration   │                      │
+│                    │   (Ada)          │                      │
+│                    └────────────────┘                      │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 Utilities Layer                         │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │   │
+│  │  │ Logging   │  │ Terminal  │  │  Crypto   │           │   │
+│  │  │ (Ada)     │  │ (Ada)     │  │ (Zig/FFI)│           │   │
+│  │  └──────────┘  └──────────┘  └──────────┘           │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 FFI Layer                              │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │   │
+│  │  │  Zig     │  │ Idris2   │  │  C Headers│           │   │
+│  │  │  (unified│  │  (API     │  │  (FFI     │           │   │
+│  │  │  hexadeca│  │   layer) │  │   bridge) │           │   │
+│  │  └──────────┘  └──────────┘  └──────────┘           │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+----
+
+== Component Descriptions
+
+=== Main Application (src/trigger/trigger.adb)
+
+The main entry point provides:
+
+* Interactive TUI with colored menu
+* Application state management
+* Command dispatching
+* Exception handling
+
+Implements the main loop and menu navigation using Ada.Text_IO and custom 
+terminal utilities.
+
+=== Session Manager (src/trigger/session/)
+
+Manages Telegram accounts and their sessions:
+
+* `account_types.adb/ads`: Account data structures with SPARK annotations
+* `session_manager.adb/ads`: Session lifecycle management
+
+Provides:
+
+* Multi-account storage
+* Session creation and persistence
+* Account CRUD operations
+* Active account tracking
+
+=== Configuration (src/trigger/config/)
+
+Handles application configuration:
+
+* API credentials (api_id, api_hash)
+* Session settings
+* Proxy configuration
+* Encryption settings
+* Logging preferences
+
+Uses JSON for storage (simplified text format in current implementation).
+
+=== Reporting (src/trigger/reporting/)
+
+Handles Telegram reporting operations:
+
+* Message reporting
+* Channel scanning
+* FloodWait handling
+* Statistics collection
+
+Uses Zig FFI via unified-hexadeca-api for actual Telegram API calls.
+
+=== Utilities (src/trigger/utils/)
+
+Provides cross-cutting functionality:
+
+* `logging.adb/ads`: Structured logging with levels
+* `terminal.adb/ads`: ANSI color support and utilities
+* `crypto.adb/ads`: Session encryption/decryption (STUB)
+
+=== FFI Layer (ffi/)
+
+Provides foreign function interfaces:
+
+* `zig/telegram.zig`: Telegram API bindings using unified-hexadeca-api
+* `idris2/TelegramAPI.idr`: High-level, type-safe API abstractions
+
+The Zig code provides the actual Telegram client functionality, while the 
+Idris2 code provides a more functional, type-safe interface.
+
+== Language Usage
+
+=== Ada/SPARK
+
+Used for:
+
+* Main application logic
+* Session management
+* Configuration
+* Utilities
+
+Rationale:
+
+* Strong typing prevents many classes of bugs
+* SPARK provides formal verification capabilities
+* Mature concurrency model (tasking)
+* Suitable for safety-critical operations
+
+=== Zig
+
+Used for:
+
+* Telegram API bindings (FFI)
+* Low-level memory management
+* Error handling
+
+Rationale:
+
+* Excellent C interop for FFI
+* Manual memory management
+* No hidden control flow
+* Compiles to native code
+
+=== Idris2
+
+Used for:
+
+* High-level API abstractions
+* Type-safe interfaces
+
+Rationale:
+
+* Dependent types for correctness
+* Pure functional where appropriate
+* Type-safe FFI wrappers
+
+== Data Flow
+
+=== Session Creation Flow
+
+1. User selects "Add Account" from menu
+2. Main application prompts for phone, API ID, API hash
+3. Session Manager calls Zig FFI to create TelegramClient
+4. Zig code uses unified-hexadeca-api to create session
+5. Session data saved to file (optionally encrypted)
+6. Account added to manager's account list
+
+=== Reporting Flow
+
+1. User selects "Start Reporting" from menu
+2. Main application prompts for channel, count, delay, option
+3. Session Manager retrieves active accounts
+4. For each account:
+   a. Session Manager loads session via Zig FFI
+   b. Reporter connects to Telegram via Zig FFI
+   c. Reporter retrieves last N messages via Zig FFI
+   d. Reporter reports each message via Zig FFI
+   e. FloodWait errors are caught and retried with delay
+5. Statistics are collected and displayed
+
+== File Structure
+
+----
+trigger/
+├── LICENSE                    # MPL-2.0 license (root)
+├── LICENSES/
+│   ├── MPL-2.0.txt            # MPL-2.0 license text
+│   └── CC-BY-SA-4.0.txt       # Documentation license
+├── NOTICE                     # Original author attribution
+├── README.adoc                # Main documentation
+├── CONTRIBUTING.adoc          # Contribution guidelines
+├── GOVERNANCE.adoc            # Governance document
+├── AFFIRMATION.adoc           # Affirmation of compliance
+├── trigger.gpr                # GNAT project file
+├── .gitignore
+├── .gitattributes
+└── .editorconfig
+│
+├── src/
+│   └── trigger/
+│       ├── trigger.adb/ads    # Main application
+│       ├── config/
+│       │   └── config.adb/ads
+│       ├── session/
+│       │   ├── account_types.adb/ads
+│       │   └── session_manager.adb/ads
+│       ├── reporting/
+│       │   └── reporter.adb/ads
+│       └── utils/
+│           ├── logging.adb/ads
+│           ├── terminal.adb/ads
+│           └── crypto.adb/ads
+│
+├── ffi/
+│   ├── zig/
+│   │   └── telegram.zig        # Zig FFI bindings
+│   └── idris2/
+│       └── TelegramAPI.idr     # Idris2 API layer
+│
+├── tests/
+│   └── test_trigger.adb        # Unit tests
+│
+└── docs/
+    └── ARCHITECTURE.adoc        # This document
+----
+
+== Dependencies
+
+=== Compile-Time Dependencies
+
+* GNAT (Ada/SPARK compiler)
+* Zig compiler (for FFI bindings)
+* Idris2 compiler (for API layer, optional)
+
+=== Runtime Dependencies
+
+* Zig runtime (for FFI)
+* Idris2 runtime (if used)
+* unified-hexadeca-api (Zig library)
+
+=== External Services
+
+* Telegram API servers
+* (Optional) Proxy servers (SOCKS5/HTTP)
+
+== Error Handling
+
+* Ada exceptions are caught at the top level
+* Zig errors are converted to Ada exceptions via FFI
+* FloodWait errors are handled with automatic retry
+* Network errors are logged and reported to user
+
+== Security Considerations
+
+* Session data can be encrypted (AES-256-CFB)
+* API credentials are stored in config.json
+* Phone numbers are stored in accounts.json
+* All sensitive data can be optionally encrypted
+
+== Future Enhancements
+
+* Full SPARK verification of critical components
+* Complete Zig FFI implementation with unified-hexadeca-api
+* Idris2 API layer with full functionality
+* Proper JSON parsing/serialization
+* Session encryption using SPARK-verified crypto
+* Proxy support implementation
+* Comprehensive test suite
