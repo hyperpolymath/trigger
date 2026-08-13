@@ -1,0 +1,34 @@
+# SELinux File Contexts for Trigger Application
+#
+# This file defines the SELinux file contexts for files used by the
+# Trigger application. It is used by restorecon and similar tools.
+#
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+# Application directory
+/app(/.*)?    system_u:object_r:trigger_t:s0
+
+# Executables
+/app/bin(/.*)?    system_u:object_r:trigger_exec_t:s0
+
+# Libraries
+/app/lib(/.*)?    system_u:object_r:trigger_lib_t:s0
+
+# Configuration
+/app/config(/.*)?    system_u:object_r:trigger_config_t:s0
+
+# Sessions
+/app/sessions(/.*)?    system_u:object_r:trigger_session_t:s0
+
+# Logs
+/app/logs(/.*)?    system_u:object_r:trigger_log_t:s0
+
+# Cache
+/app/cache(/.*)?    system_u:object_r:trigger_cache_t:s0
+
+# Documentation
+/app/docs(/.*)?    system_u:object_r:httpd_sys_content_t:s0
+
+# Configuration files
+/etc/firewalld(/.*)?    system_u:object_r:firewalld_config_t:s0
+/etc/selinux(/.*)?    system_u:object_r:selinux_config_t:s0

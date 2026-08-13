@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FirewallD custom service for Trigger API
+  
+  SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<service version="1.0">
+  <short>Trigger API</short>
+  <description>Trigger application API service</description>
+  <port protocol="tcp" port="8080"/>
+  <module name="nf_conntrack"/>
+</service>

@@ -1,0 +1,25 @@
+# SELinux Port Contexts for Trigger Application
+#
+# This file defines the SELinux port contexts for network ports used by
+# the Trigger application.
+#
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+# HTTP
+80 tcp system_u:object_r:http_port_t:s0
+
+# HTTPS
+443 tcp system_u:object_r:http_port_t:s0
+
+# Trigger API
+8080 tcp system_u:object_r:trigger_api_port_t:s0
+
+# Trigger Alternate HTTPS
+8443 tcp system_u:object_r:trigger_alt_port_t:s0
+
+# SSH
+22 tcp system_u:object_r:ssh_port_t:s0
+
+# DNS
+53 tcp system_u:object_r:dns_port_t:s0
+53 udp system_u:object_r:dns_port_t:s0

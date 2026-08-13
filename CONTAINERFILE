@@ -1,0 +1,382 @@
+# CONTAINERFILE for Trigger Application
+#
+# Multi-stage build for Podman/Docker using Wolfi base image with Guix
+#
+# Architecture: Ada/SPARK + Zig + Idris2
+# Target: x86_64 (can be extended for arm64)
+#
+# Build with:
+#   podman build -f CONTAINERFILE -t hyperpolymath/trigger:latest .
+#   podman run -it --security-opt label=type:container_runtime_t hyperpolymath/trigger:latest
+#
+# Security: Full SELinux labeling, firewalld integration, minimal privileges
+#
+# SPDX-License-Identifier: MPL-2.0
+
+# =============================================================================
+# STAGE 1: Base Builder Image with Wolfi + Guix
+# =============================================================================
+
+FROM ghcr.io/wolfi-dev/wolfi:latest AS builder
+
+# Wolfi is a Chainguard-owned, community-driven Linux distribution
+# optimized for containers and cloud-native environments
+
+# Install system dependencies
+RUN apk add --no-cache \
+    # Build tools
+    gcc \
+    musl-dev \
+    make \
+    cmake \
+    git \
+    bash \
+    coreutils \
+    findutils \
+    diffutils \
+    gawk \
+    sed \
+    grep \
+    patch \
+    tar \
+    xz \
+    gzip \
+    bzip2 \
+    # Runtime dependencies
+    libsodium \
+    libgc \
+    libgmp \
+    # Container tools
+    podman \
+    buildah \
+    skopeo \
+    # Security
+    firewalld \
+    selinux-tools \
+    policycoreutils \
+    audit \
+    # Certificate management
+    ca-certificates \
+    openssl \
+    # Additional tools
+    curl \
+    wget \
+    jq \
+    python3 \
+    py3-pip \
+    # For Guix
+    guile \
+    gcc-gnat \
+    zig \
+    idris2 \
+    # For development
+    vim \
+    less \
+    tree \
+    htop \
+    lsof \
+    strace \
+    tcpdump \
+    net-tools \
+    iproute2 \
+    dnsutils \
+    # For CI/CD
+    just \
+    asciidoctor \
+    # For crypto
+    liboqs \
+    oqsproviders \
+    # Cleanup
+    && rm -rf /var/cache/apk/*
+
+# Set up Guix environment
+RUN mkdir -p /opt/guix && \
+    chown root:root /opt/guix && \
+    echo "export GUIX_PROFILE=/opt/guix/profile" >> /etc/profile.d/guix.sh && \
+    echo "export PATH=/opt/guix/profile/bin:$PATH" >> /etc/profile.d/guix.sh
+
+# Install Guix packages
+RUN source /etc/profile.d/guix.sh && \
+    guix pull --channels="guix.json" && \
+    guix install -p /opt/guix/profile \
+        gnat \
+        gprbuild \
+        asis \
+        spark \
+        zig \
+        idris2 \
+        libsodium \
+        liboqs \
+        openssl \
+        pkg-config \
+        autoconf \
+        automake \
+        libtool \
+        flex \
+        bison \
+        && guix gc
+
+# Set up build environment
+WORKDIR /app
+
+# Copy source code
+COPY . /app/
+
+# Configure build environment
+ENV GNAT_PROJECT_PATH=/app
+ENV ADA_INCLUDE_PATH=/app/src:/app/ffi
+ENV LD_LIBRARY_PATH=/opt/guix/profile/lib:$LD_LIBRARY_PATH
+
+# Install Ada dependencies via Alire (if available)
+RUN if command -v alr >/dev/null 2>&1; then \
+        alr update && \
+        alr get --build gnat_native \
+        gnatcoll \
+        aws \
+        sockets \
+        xmlada \
+        logging \
+        crypto; \
+    fi
+
+# =============================================================================
+# STAGE 2: Build Application
+# =============================================================================
+
+FROM builder AS build
+
+# Create build directory
+RUN mkdir -p /app/obj /app/bin /app/lib
+
+# Build with GNAT
+RUN echo "[BUILD] Building Trigger..." && \
+    gprbuild -P /app/trigger.gpr -XLIBRARY_TYPE=static && \
+    echo "[BUILD] GNAT compilation complete"
+
+# Build Zig FFI
+RUN echo "[BUILD] Compiling Zig FFI..." && \
+    cd /app/ffi/zig && \
+    zig build-lib -dynamic telegram.zig && \
+    zig build-lib -dynamic discord.zig && \
+    zig build-lib -dynamic twitter.zig && \
+    zig build-lib -dynamic crypto.zig -lc -lsodium -loqs && \
+    cd /app && \
+    echo "[BUILD] Zig compilation complete"
+
+# Build Idris2 API
+RUN echo "[BUILD] Compiling Idris2 API..." && \
+    cd /app/ffi/idris2 && \
+    idris2 --build TelegramAPI.ipkg && \
+    idris2 --build DiscordAPI.ipkg && \
+    idris2 --build TwitterAPI.ipkg && \
+    idris2 --build CryptoAPI.ipkg && \
+    cd /app && \
+    echo "[BUILD] Idris2 compilation complete"
+
+# =============================================================================
+# STAGE 3: Runtime Image
+# =============================================================================
+
+FROM ghcr.io/wolfi-dev/wolfi:latest AS runtime
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    # Runtime
+    libsodium \
+    libgc \
+    libgmp \
+    # System
+    bash \
+    coreutils \
+    ca-certificates \
+    openssl \
+    # Security
+    firewalld \
+    selinux-tools \
+    policycoreutils \
+    audit \
+    # Tools
+    curl \
+    jq \
+    just \
+    # Crypto
+    liboqs \
+    oqsproviders \
+    && rm -rf /var/cache/apk/*
+
+# Set up Guix runtime
+RUN mkdir -p /opt/guix/profile && \
+    echo "export GUIX_PROFILE=/opt/guix/profile" >> /etc/profile.d/guix.sh && \
+    echo "export PATH=/opt/guix/profile/bin:$PATH" >> /etc/profile.d/guix.sh && \
+    echo "export LD_LIBRARY_PATH=/opt/guix/profile/lib:$LD_LIBRARY_PATH" >> /etc/profile.d/guix.sh
+
+# Install Guix runtime packages
+RUN source /etc/profile.d/guix.sh && \
+    guix pull --channels="guix.json" && \
+    guix install -p /opt/guix/profile \
+        libsodium \
+        liboqs \
+        openssl \
+    && guix gc
+
+# Set up directories
+RUN mkdir -p /app/bin /app/lib /app/obj /app/sessions /app/config /app/logs /app/cache && \
+    chmod 700 /app/sessions && \
+    chmod 700 /app/config && \
+    chmod 755 /app/logs && \
+    chmod 755 /app/cache
+
+# Copy built binaries from build stage
+COPY --from=build /app/bin/ /app/bin/
+COPY --from=build /app/lib/ /app/lib/
+
+# Copy runtime assets
+COPY .github/ /app/.github/
+COPY docs/ /app/docs/
+COPY LICENSE /app/LICENSE
+COPY LICENSES/ /app/LICENSES/
+COPY README.adoc /app/README.adoc
+COPY EXPLAINME.adoc /app/EXPLAINME.adoc
+COPY CONTRIBUTING.adoc /app/CONTRIBUTING.adoc
+COPY Justfile /app/Justfile
+
+# Set up firewalld configuration
+COPY firewalld/ /etc/firewalld/
+RUN chmod 640 /etc/firewalld/* && \
+    chown root:root /etc/firewalld/*
+
+# Set up SELinux context
+RUN chcon -R -t container_file_t /app && \
+    chcon -R -t httpd_sys_content_t /app/docs && \
+    chcon -R -t var_log_t /app/logs
+
+# Create non-root user for security
+RUN addgroup -S trigger && \
+    adduser -S -G trigger -D -s /bin/bash trigger && \
+    mkdir -p /home/trigger && \
+    chown trigger:trigger /home/trigger && \
+    chown -R trigger:trigger /app
+
+# Set up environment variables
+ENV APP_HOME=/app
+ENV APP_USER=trigger
+ENV APP_GROUP=trigger
+ENV APP_LOG_DIR=/app/logs
+ENV APP_CONFIG_DIR=/app/config
+ENV APP_CACHE_DIR=/app/cache
+ENV APP_SESSION_DIR=/app/sessions
+
+# Set capabilities (minimal)
+# Drop all capabilities by default, then add only what's needed
+RUN setcap -r /app/bin/trigger
+
+# Set SELinux security context
+LABEL maintainer=hyperpolymath
+LABEL version=1.0.0
+LABEL description="Trigger - Multi-platform social media reporting utility"
+LABEL security.txt="v=security.txt; contact=mailto:hyperpolymath@users.noreply.github.com"
+
+# Configure firewalld
+RUN firewall-offline-cmd --add-port=80/tcp && \
+    firewall-offline-cmd --add-port=443/tcp && \
+    firewall-offline-cmd --add-port=8080/tcp && \
+    firewall-offline-cmd --add-port=8443/tcp && \
+    firewall-offline-cmd --set-default-zone=drop && \
+    firewall-offline-cmd --add-service=ssh && \
+    firewall-offline-cmd --add-service=https && \
+    firewall-offline-cmd --add-service=dns
+
+# Set up SELinux policies
+RUN setsebool -P container_connect_any=1 && \
+    setsebool -P container_manage_cgroup=1 && \
+    setsebool -P httpd_can_network_connect=1 && \
+    setsebool -P httpd_can_network_relay=0 && \
+    setsebool -P nfs_export_all_rw=0
+
+# Set working directory
+WORKDIR /app
+
+# Set user to non-root for runtime
+USER trigger
+
+# Expose ports (only the ones we explicitly allow)
+EXPOSE 80/tcp
+EXPOSE 443/tcp
+EXPOSE 8080/tcp
+EXPOSE 8443/tcp
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD /app/bin/trigger --health || exit 1
+
+# Default command
+ENTRYPOINT ["/app/bin/trigger"]
+CMD ["--help"]
+
+# =============================================================================
+# STAGE 4: Development Container (with full toolchain)
+# =============================================================================
+
+FROM builder AS dev
+
+# Keep full build environment for development
+WORKDIR /app
+
+# Install development tools
+RUN apk add --no-cache \
+    git \
+    make \
+    cmake \
+    gdb \
+    valgrind \
+    clang \
+    llvm \
+    rust \
+    cargo \
+    go \
+    nodejs \
+    npm \
+    python3 \
+    py3-pip \
+    && rm -rf /var/cache/apk/*
+
+# Set up development environment
+ENV DEV_MODE=1
+ENV EDITOR=vim
+
+# Install Python packages for development
+RUN pip3 install --no-cache-dir \
+    pons \
+    panic-attack \
+    pygments \
+    black \
+    flake8 \
+    mypy \
+    pytest \
+    hypothesis
+
+# Set default command for development
+ENTRYPOINT ["/bin/bash"]
+CMD ["-c", "cd /app && just"]
+
+# =============================================================================
+# BUILD COMMANDS
+# =============================================================================
+
+# Build production image:
+#   podman build -f CONTAINERFILE -t hyperpolymath/trigger:latest .
+
+# Build development image:
+#   podman build -f CONTAINERFILE --target dev -t hyperpolymath/trigger:dev .
+
+# Run production container:
+#   podman run -it --rm --security-opt label=type:container_runtime_t \
+#       -p 80:80 -p 443:443 -p 8080:8080 -p 8443:8443 \
+#       --volume /path/to/config:/app/config:Z \
+#       --volume /path/to/sessions:/app/sessions:Z \
+#       hyperpolymath/trigger:latest
+
+# Run development container:
+#   podman run -it --rm --security-opt label=type:container_runtime_t \
+#       --volume $(pwd):/app:Z \
+#       hyperpolymath/trigger:dev

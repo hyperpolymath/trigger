@@ -1,0 +1,172 @@
+# SELinux Policy for Trigger Application
+#
+# This is a custom SELinux policy module for the Trigger application.
+# It defines the types, interfaces, and rules needed for Trigger to
+# operate within an enforcing SELinux environment.
+#
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+policy_module(trigger, 1.0.0)
+
+########################################
+#
+# Declarations
+#
+
+# Application types
+type trigger_t;
+type trigger_exec_t;
+type trigger_config_t;
+type trigger_session_t;
+type trigger_log_t;
+type trigger_cache_t;
+type trigger_lib_t;
+
+# Port types
+type trigger_http_port_t;
+type trigger_api_port_t;
+type trigger_alt_port_t;
+
+# Network types
+type trigger_net_t;
+
+# Interface declarations
+interface(`trigger_domain', `
+    gen_require(`
+        type trigger_t;
+        type trigger_exec_t;
+        type trigger_config_t;
+        type trigger_session_t;
+        type trigger_log_t;
+        type trigger_cache_t;
+        type trigger_lib_t;
+        type trigger_net_t;
+    `)
+`)
+
+########################################
+#
+# Trigger application type
+#
+
+# Define the trigger domain
+typeattribute trigger_t;
+
+# Application executable
+init_daemon_domain(trigger_t, trigger_exec_t)
+
+# Application can read its own files
+allow trigger_t trigger_config_t:file { read getattr open };
+allow trigger_t trigger_session_t:dir { search read getattr };
+allow trigger_t trigger_session_t:file { read write getattr open };
+allow trigger_t trigger_log_t:file { read write create getattr open append };
+allow trigger_t trigger_cache_t:dir { search read write getattr add_name };
+allow trigger_t trigger_cache_t:file { read write create getattr open };
+allow trigger_t trigger_lib_t:file { read getattr open };
+
+# Application can execute its own binaries
+allow trigger_t trigger_exec_t:file { read getattr open execute };
+
+########################################
+#
+# Network access
+#
+
+# Application can bind to HTTP ports
+allow trigger_t trigger_http_port_t:tcp_socket name_bind;
+
+# Application can bind to API ports
+allow trigger_t trigger_api_port_t:tcp_socket name_bind;
+
+# Application can connect to network
+allow trigger_t trigger_net_t:tcp_socket { connect };
+allow trigger_t trigger_net_t:udp_socket { connect send };
+
+# Application can use standard ports
+allow trigger_t http_port_t:tcp_socket name_bind;
+allow trigger_t http_cache_port_t:tcp_socket name_bind;
+
+########################################
+#
+# System access
+#
+
+# Application can use standard system types
+allow trigger_t etc_t:file { read getattr open };
+allow trigger_t usr_t:file { read getattr open };
+allow trigger_t lib_t:file { read getattr open };
+allow trigger_t bin_t:file { read getattr open execute };
+
+# Application can use tmp
+allow trigger_t tmp_t:dir { search read write getattr add_name };
+allow trigger_t tmp_t:file { read write create getattr open };
+
+# Application can use dev
+allow trigger_t device_t:chr_file { read write };
+allow trigger_t null_device_t:chr_file { read write };
+allow trigger_t random_device_t:chr_file { read };
+allow trigger_t urandom_device_t:chr_file { read };
+
+########################################
+#
+# Logging
+#
+
+# Application can write to syslog
+allow trigger_t syslogd_t:unix_stream_socket connectto;
+allow trigger_t var_log_t:dir { search read write getattr add_name };
+allow trigger_t var_log_t:file { read write create getattr open append };
+
+########################################
+#
+# crypto access
+#
+
+# Application can use crypto
+allow trigger_t user_home_t:dir { search };
+allow trigger_t etc_t:dir { search };
+
+# Application can use random
+allow trigger_t random_device_t:chr_file { read };
+
+########################################
+#
+# Deny rules
+#
+
+# Application cannot modify system files
+dontaudit trigger_t etc_t:file write;
+dontaudit trigger_t usr_t:file write;
+dontaudit trigger_t lib_t:file write;
+
+# Application cannot execute from writable memory
+dontaudit trigger_t self:process { execmem execstack };
+
+########################################
+#
+# Port definitions
+#
+
+# Define custom port types
+portcon tcp 8080 system_high_port_t trigger_api_port_t;
+portcon tcp 8443 system_high_port_t trigger_alt_port_t;
+
+########################################
+#
+# File context definitions
+#
+
+# Application files
+filecon "/app" dir system_u:object_r:trigger_t:s0;
+filecon "/app/bin" dir system_u:object_r:trigger_t:s0;
+filecon "/app/bin/.*" regex system_u:object_r:trigger_exec_t:s0;
+filecon "/app/lib" dir system_u:object_r:trigger_lib_t:s0;
+filecon "/app/lib/.*" regex system_u:object_r:trigger_lib_t:s0;
+filecon "/app/config" dir system_u:object_r:trigger_config_t:s0;
+filecon "/app/config/.*" regex system_u:object_r:trigger_config_t:s0;
+filecon "/app/sessions" dir system_u:object_r:trigger_session_t:s0;
+filecon "/app/sessions/.*" regex system_u:object_r:trigger_session_t:s0;
+filecon "/app/logs" dir system_u:object_r:trigger_log_t:s0;
+filecon "/app/logs/.*" regex system_u:object_r:trigger_log_t:s0;
+filecon "/app/cache" dir system_u:object_r:trigger_cache_t:s0;
+filecon "/app/cache/.*" regex system_u:object_r:trigger_cache_t:s0;

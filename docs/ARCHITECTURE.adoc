@@ -269,6 +269,145 @@ trigger/
 * Phone numbers are stored in accounts.json
 * All sensitive data can be optionally encrypted
 
+== Containerisation and Deployment
+
+=== Overview
+
+Trigger is designed to run in containerized environments using Podman or Docker.
+The containerisation setup provides:
+
+* **Base Image**: Wolfi (Chainguard-owned, community-driven Linux distribution)
+* **Package Manager**: Guix (for functional package management)
+* **Security**: Full SELinux labeling, firewalld integration
+* **Port Restrictions**: All ports down except 80, 443, 8080, 8443
+
+=== Architecture Layers
+
+----
+┌─────────────────────────────────────────────────────────────┐
+│                    Container Stack                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │  Application │    │   Runtime   │    │    Build    │     │
+│  │    Layer    │    │   Layer     │    │    Layer    │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         ▲                  ▲                    ▲              │
+│         │                  │                    │              │
+│  ┌──────┴──────┐    ┌──────┴──────┐    ┌──────┴──────┐    │
+│  │  Trigger    │    │  Wolfi +   │    │  Wolfi +   │    │
+│  │  Binary     │    │  Guix      │    │  Guix +    │    │
+│  │  + Config   │    │  Runtime   │    │  Build      │    │
+│  └─────────────┘    └─────────────┘    └─────────────┘    │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 Security Layer                           │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │   │
+│  │  │ SELinux   │  │ firewalld │  │  Non-     │           │   │
+│  │  │ (enforce) │  │ (drop)    │  │ root user│           │   │
+│  │  └──────────┘  └──────────┘  └──────────┘           │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────┘
+----
+
+=== Containerfile Structure
+
+The `CONTAINERFILE` uses a multi-stage build:
+
+----
+1. **builder**: Wolfi + Guix with full build toolchain
+   - GCC, GNAT, musl-dev
+   - Zig, Idris2
+   - libsodium, liboqs
+   - Installs all build dependencies via Guix
+
+2. **build**: Compiles the application
+   - Builds Ada/SPARK code with GNAT
+   - Builds Zig FFI libraries
+   - Builds Idris2 API packages
+
+3. **runtime**: Minimal runtime image
+   - Only includes runtime dependencies
+   - Wolfi + Guix runtime packages
+   - firewalld configured with drop zone
+   - SELinux policies for container runtime
+   - Non-root user (trigger) for security
+   - Only ports 80, 443, 8080, 8443, 22, 53 exposed
+
+4. **dev**: Full development environment
+   - Keeps all build tools
+   - Includes debugging tools (gdb, valgrind)
+   - Python with pons, panic-attack, testing tools
+----
+
+=== Firewalld Configuration
+
+The firewalld configuration is in `firewalld/` directory:
+
+* `firewalld.conf`: Main configuration with DefaultZone=drop
+* `zones/drop.xml`: Drop zone with explicit port allowances
+* `zones/public.xml`: Public zone with rate limiting
+* `services/trigger-https.xml`: Custom service for HTTPS ports
+* `services/trigger-api.xml`: Custom service for API port
+
+**Default Policy**: All incoming traffic is DROPPED. Only explicitly allowed:
+
+* TCP: 22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS), 8080 (API), 8443 (Alt HTTPS)
+* UDP: 53 (DNS)
+* Services: ssh, https, dns
+* Rate limiting: 100/s for SSH, 1000/s for HTTPS
+
+=== SELinux Configuration
+
+The SELinux configuration is in `selinux/` directory:
+
+* `selinux.config`: Main SELinux configuration
+* `policies/trigger.te`: Custom SELinux policy module
+* `contexts/file_contexts`: File security contexts
+* `contexts/port_contexts`: Port security contexts
+
+**Key Settings**:
+
+* Mode: enforcing
+* Container SELinux: enforcing with container_runtime_t type
+* Custom types: trigger_t, trigger_exec_t, trigger_config_t, etc.
+* Deny rules: Prevent system file modification, writable memory execution
+* File contexts: Proper labeling for /app, /app/bin, /app/config, etc.
+* Port contexts: Proper labeling for ports 80, 443, 8080, 8443, 22, 53
+
+=== Running the Container
+
+----
+# Build production image
+podman build -f CONTAINERFILE -t hyperpolymath/trigger:latest .
+
+# Run production container
+podman run -it --rm --security-opt label=type:container_runtime_t \
+    -p 80:80 -p 443:443 -p 8080:8080 -p 8443:8443 \
+    --volume /path/to/config:/app/config:Z \
+    --volume /path/to/sessions:/app/sessions:Z \
+    hyperpolymath/trigger:latest
+
+# Run development container
+podman run -it --rm --security-opt label=type:container_runtime_t \
+    --volume $(pwd):/app:Z \
+    hyperpolymath/trigger:dev
+----
+
+=== Security Hardening
+
+The containerisation includes the following security measures:
+
+* **Non-root user**: Application runs as `trigger` user, not root
+* **Read-only filesystem**: Where possible, filesystem is read-only
+* **SELinux Enforcing**: Mandatory access control with custom policies
+* **firewalld Drop Zone**: All incoming traffic dropped by default
+* **Capability Dropping**: All capabilities dropped, only needed ones added
+* **Port Restrictions**: Only ports 80, 443, 8080, 8443 exposed
+* **Directory Permissions**: Proper permissions on config, sessions, logs, cache
+* **Health Checks**: Container health monitoring
+
 == Future Enhancements
 
 * Full SPARK verification of critical components

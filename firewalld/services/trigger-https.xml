@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FirewallD custom service for Trigger HTTPS
+  
+  SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<service version="1.0">
+  <short>Trigger HTTPS</short>
+  <description>Trigger application HTTPS service</description>
+  <port protocol="tcp" port="443"/>
+  <port protocol="tcp" port="8443"/>
+  <module name="nf_conntrack"/>
+</service>

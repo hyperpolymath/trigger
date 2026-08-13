@@ -1,0 +1,132 @@
+= Git Hooks for Trigger
+:description: Repository Git hooks for automated checks
+:author: hyperpolymath
+
+== Overview
+
+This directory contains Git hooks that can be installed to enforce repository
+standards, run automated checks, and maintain code quality.
+
+== Installation
+
+To install these hooks, create symlinks from `.git/hooks/` to this directory:
+
+----
+# Navigate to repository root
+cd /path/to/trigger
+
+# Create symlinks for each hook
+ln -sf scripts/git-hooks/pre-commit .git/hooks/pre-commit
+ln -sf scripts/git-hooks/pre-push .git/hooks/pre-push
+ln -sf scripts/git-hooks/post-commit .git/hooks/post-commit
+ln -sf scripts/git-hooks/post-merge .git/hooks/post-merge
+
+# Make hooks executable
+chmod +x .git/hooks/*
+----
+
+== Available Hooks
+
+=== pre-commit
+
+Runs before each commit to:
+
+* Check code formatting (Zig, Ada)
+* Run linting checks
+* Validate commit message format
+* Verify SPDX license headers
+* Run basic tests
+
+=== pre-push
+
+Runs before each push to:
+
+* Run full test suite
+* Run pons (static analysis)
+* Run panic-attack (dangerous pattern detection)
+* Check build consistency
+* Verify container builds
+
+=== post-commit
+
+Runs after each commit to:
+
+* Update documentation if needed
+* Clean temporary files
+* Trigger CI/CD if applicable
+
+=== post-merge
+
+Runs after each merge to:
+
+* Check for dependency updates
+* Verify merge integrity
+* Update generated files
+
+== Configuration
+
+Create a `scripts/git-hooks/config.sh` file to customize hook behavior:
+
+----
+#!/bin/bash
+# scripts/git-hooks/config.sh
+
+# Enable/disable hooks (0 = disabled, 1 = enabled)
+export ENABLE_PRE_COMMIT=1
+export ENABLE_PRE_PUSH=1
+export ENABLE_POST_COMMIT=1
+export ENABLE_POST_MERGE=1
+
+# Strictness level (0 = lenient, 1 = normal, 2 = strict)
+export STRICTNESS_LEVEL=2
+
+# Timeout for checks (in seconds)
+export CHECK_TIMEOUT=300
+
+# Directories to check
+export CHECK_DIRS="src ffi tests"
+
+# Files to check for SPDX headers
+export SPDX_CHECK_EXTENSIONS="ads adb zig idr"
+----
+
+== Hook Bypass
+
+To bypass hooks for a specific commit/push, use the `--no-verify` flag:
+
+----
+# Bypass pre-commit and pre-push hooks
+git commit --no-verify -m "Message"
+git push --no-verify
+----
+
+Use this sparingly, only when necessary.
+
+== Testing Hooks
+
+To test a hook without creating a commit:
+
+----
+# Test pre-commit on staged files
+./scripts/git-hooks/pre-commit
+
+# Test pre-push
+./scripts/git-hooks/pre-push
+----
+
+== Dependencies
+
+The hooks require the following tools:
+
+* `just` - For build and test commands
+* `zig` - For Zig formatting
+* `gprbuild` - For Ada compilation
+* `idris2` - For Idris2 checking
+* `pons` - For static analysis (Python)
+* `panic-attack` - For dangerous pattern detection
+* `podman` - For container builds
+* `named-checkzone` - For DNS zone validation
+
+== License
+
+SPDX-License-Identifier: MPL-2.0

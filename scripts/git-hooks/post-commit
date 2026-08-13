@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# post-commit hook for Trigger
+#
+# Runs cleanup and notification tasks after a commit.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+set -euo pipefail
+
+# Colors for output
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Source hook configuration
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$HOOK_DIR/../.." && pwd)"
+CONFIG_FILE="$HOOK_DIR/config.sh"
+
+# Load configuration if exists
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    ENABLE_POST_COMMIT=${ENABLE_POST_COMMIT:-1}
+fi
+
+# Check if post-commit is enabled
+if [ "$ENABLE_POST_COMMIT" -ne 1 ]; then
+    exit 0
+fi
+
+cd "$REPO_ROOT"
+
+echo -e "${BLUE}[post-commit]${NC} Running post-commit tasks..."
+
+# Task 1: Clean temporary files
+if [ -d "$REPO_ROOT/tmp" ]; then
+    echo "[post-commit] Cleaning tmp directory..."
+    rm -rf "$REPO_ROOT/tmp"
+fi
+
+# Task 2: Clean build artifacts
+if [ -d "$REPO_ROOT/obj" ]; then
+    echo "[post-commit] Cleaning obj directory..."
+    rm -rf "$REPO_ROOT/obj"
+fi
+
+# Task 3: Update documentation if needed
+if command -v asciidoctor >/dev/null 2>&1; then
+    if [ -f "$REPO_ROOT/docs/ARCHITECTURE.adoc" ]; then
+        echo "[post-commit] Checking documentation..."
+        # Only regenerate if source changed
+        if git diff HEAD~1 HEAD --name-only | grep -q '\.adoc$'; then
+            echo "[post-commit] Documentation changed, regenerating HTML..."
+            mkdir -p "$REPO_ROOT/docs/html"
+            asciidoctor -D "$REPO_ROOT/docs/html" -b html5 "$REPO_ROOT/docs/"*.adoc 2>/dev/null || true
+        fi
+    fi
+fi
+
+# Task 4: Check for version updates
+if git diff HEAD~1 HEAD --name-only | grep -E '(Justfile|trigger\.gpr)$'; then
+    echo "[post-commit] Build configuration changed"
+    echo "[post-commit] Consider rebuilding and testing"
+fi
+
+echo -e "${BLUE}[post-commit]${NC} Post-commit tasks complete"

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FirewallD public zone configuration for Trigger Application
+  
+  Used for public-facing interfaces with strict access control.
+  
+  SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<zone target="REJECT" type="public">
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incoming connections are accepted.</description>
+  
+  <!-- Log all rejected packets -->
+  <log prefix="trigger-firewalld-public: "/>
+  
+  <!-- Allowed services -->
+  <service name="ssh"/>
+  <service name="https"/>
+  <service name="dns"/>
+  
+  <!-- Allowed ports -->
+  <port protocol="tcp" port="80"/>
+  <port protocol="tcp" port="443"/>
+  <port protocol="tcp" port="8080"/>
+  <port protocol="tcp" port="8443"/>
+  
+  <!-- Rate limiting -->
+  <rich-rule type="rate-limit">
+    <limit value="100/s"/>
+    <accept type="service" name="ssh"/>
+  </rich-rule>
+  
+  <rich-rule type="rate-limit">
+    <limit value="1000/s"/>
+    <accept type="service" name="https"/>
+  </rich-rule>
+  
+  <!-- ICMP -->
+  <icmp-block name="echo-request"/>
+  <icmp-block name="echo-reply"/>
+  <icmp-block name="destination-unreachable"/>
+  <icmp-block name="time-exceeded"/>
+</zone>

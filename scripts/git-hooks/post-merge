@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+#
+# post-merge hook for Trigger
+#
+# Runs tasks after merging changes into the repository.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+set -euo pipefail
+
+# Colors for output
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Source hook configuration
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$HOOK_DIR/../.." && pwd)"
+CONFIG_FILE="$HOOK_DIR/config.sh"
+
+# Load configuration if exists
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    ENABLE_POST_MERGE=${ENABLE_POST_MERGE:-1}
+fi
+
+# Check if post-merge is enabled
+if [ "$ENABLE_POST_MERGE" -ne 1 ]; then
+    exit 0
+fi
+
+cd "$REPO_ROOT"
+
+echo -e "${BLUE}[post-merge]${NC} Running post-merge tasks..."
+
+# Task 1: Check for dependency updates
+if [ -f "$REPO_ROOT/Justfile" ]; then
+    echo "[post-merge] Checking if build is needed..."
+    BUILD_NEEDED=0
+    
+    # Check if source files changed
+    if git diff HEAD~1 HEAD --name-only | grep -qE '\.(ads|adb|zig|idr)$'; then
+        BUILD_NEEDED=1
+    fi
+    
+    # Check if build files changed
+    if git diff HEAD~1 HEAD --name-only | grep -qE '(Justfile|trigger\.gpr)$'; then
+        BUILD_NEEDED=1
+    fi
+    
+    if [ "$BUILD_NEEDED" -eq 1 ]; then
+        echo "[post-merge] Source or build files changed, rebuild recommended"
+        if command -v just >/dev/null 2>&1; then
+            echo "[post-merge] Running: just rebuild"
+            just rebuild 2>/dev/null || echo "[post-merge] Rebuild failed or just not available"
+        fi
+    fi
+fi
+
+# Task 2: Update submodules
+if [ -f "$REPO_ROOT/.gitmodules" ]; then
+    echo "[post-merge] Updating submodules..."
+    git submodule update --init --recursive 2>/dev/null || true
+fi
+
+# Task 3: Check for new/updated hooks
+if [ -d "$HOOK_DIR" ]; then
+    echo "[post-merge] Checking for new hooks..."
+    for hook_file in "$HOOK_DIR"/*; do
+        if [ -f "$hook_file" ]; then
+            hook_name=$(basename "$hook_file")
+            hook_dest="$REPO_ROOT/.git/hooks/$hook_name"
+            
+            if [ ! -f "$hook_dest" ] || [ "$hook_file" -nt "$hook_dest" ]; then
+                echo "[post-merge] Installing/updating hook: $hook_name"
+                cp "$hook_file" "$hook_dest"
+                chmod +x "$hook_dest"
+            fi
+        fi
+    done
+fi
+
+# Task 4: Check for rsr-template-repo compliance
+if [ -d "$REPO_ROOT/.machine_readable" ]; then
+    echo "[post-merge] Checking rsr-template-repo compliance..."
+    # This would be implemented with actual compliance checks
+    echo "[post-merge] Compliance check: TODO - implement actual checks"
+fi
+
+# Task 5: Notify about merge
+MERGED_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+MERGED_COMMITS=$(git log --oneline HEAD~10..HEAD --graph --abbrev-commit 2>/dev/null | head -5)
+
+if [ -n "$MERGED_COMMITS" ]; then
+    echo -e "${YELLOW}[post-merge] Latest merged commits:${NC}"
+    echo "$MERGED_COMMITS"
+fi
+
+echo -e "${BLUE}[post-merge]${NC} Post-merge tasks complete"

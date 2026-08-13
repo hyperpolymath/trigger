@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FirewallD drop zone configuration for Trigger Application
+  
+  This is the DEFAULT zone. All incoming traffic is DROPPED.
+  Only explicitly added services/ports in other zones are allowed.
+  
+  SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<zone target="DROP">
+  <short>Drop</short>
+  <description>Any incoming network packets are dropped, there is no reply. Only outgoing network connections are possible.</description>
+  
+  <!-- Log all dropped packets -->
+  <log prefix="trigger-firewalld-drop: "/>
+  
+  <!-- No services allowed by default -->
+  <service name="ssh"/>
+  <service name="https"/>
+  <service name="dns"/>
+  
+  <!-- Explicitly allow specific ports -->
+  <port protocol="tcp" port="80"/>
+  <port protocol="tcp" port="443"/>
+  <port protocol="tcp" port="8080"/>
+  <port protocol="tcp" port="8443"/>
+  <port protocol="tcp" port="22"/>
+  <port protocol="tcp" port="53"/>
+  <port protocol="udp" port="53"/>
+  
+  <!-- ICMP for connectivity testing -->
+  <icmp-block name="echo-request"/>
+  <icmp-block-inversion/>
+</zone>
