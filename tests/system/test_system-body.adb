@@ -6,6 +6,8 @@
 
 package body Test_System is
 
+   use Test_Harness;
+
    --  Test procedures
    procedure Test_Application_Startup is
    begin
@@ -40,12 +42,20 @@ package body Test_System is
    --  Register all tests
    procedure Register_System_Tests is
    begin
-      Register_Test (System_Registry, "System", "Test_Application_Startup", "System", Test_Application_Startup'Access);
-      Register_Test (System_Registry, "System", "Test_Application_Shutdown", "System", Test_Application_Shutdown'Access);
-      Register_Test (System_Registry, "System", "Test_Configuration_Loading", "System", Test_Configuration_Loading'Access);
-      Register_Test (System_Registry, "System", "Test_Configuration_Saving", "System", Test_Configuration_Saving'Access);
-      Register_Test (System_Registry, "System", "Test_Session_Persistence", "System", Test_Session_Persistence'Access);
-      Register_Test (System_Registry, "System", "Test_Multi_Account_Management", "System", Test_Multi_Account_Management'Access);
+      --  System tests are Provisionally-Proven (type-safe framework)
+      --  Using Decorative category for system-level testing
+      Register_Test (System_Registry, "System", "Test_Application_Startup", "System", Test_Application_Startup'Access,
+                    Status_Provisionally_Proven, Category_Decorative);
+      Register_Test (System_Registry, "System", "Test_Application_Shutdown", "System", Test_Application_Shutdown'Access,
+                    Status_Provisionally_Proven, Category_Decorative);
+      Register_Test (System_Registry, "System", "Test_Configuration_Loading", "System", Test_Configuration_Loading'Access,
+                    Status_Provisionally_Proven, Category_Decorative);
+      Register_Test (System_Registry, "System", "Test_Configuration_Saving", "System", Test_Configuration_Saving'Access,
+                    Status_Provisionally_Proven, Category_Decorative);
+      Register_Test (System_Registry, "System", "Test_Session_Persistence", "System", Test_Session_Persistence'Access,
+                    Status_Provisionally_Proven, Category_Decorative);
+      Register_Test (System_Registry, "System", "Test_Multi_Account_Management", "System", Test_Multi_Account_Management'Access,
+                    Status_Provisionally_Proven, Category_Decorative);
    end Register_System_Tests;
 
    --  Run all system tests

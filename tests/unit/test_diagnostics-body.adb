@@ -6,6 +6,8 @@
 
 package body Test_Diagnostics is
 
+   use Test_Harness;
+
    --  Test procedures
    procedure Test_Check_Dependencies is
    begin
@@ -45,13 +47,22 @@ package body Test_Diagnostics is
    --  Register all tests
    procedure Register_Diagnostics_Tests is
    begin
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Check_Dependencies", "Unit", Test_Check_Dependencies'Access);
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Check_Configuration", "Unit", Test_Check_Configuration'Access);
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Check_Sessions", "Unit", Test_Check_Sessions'Access);
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Health_Check", "Unit", Test_Health_Check'Access);
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Self_Heal_Config", "Unit", Test_Self_Heal_Config'Access);
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Self_Heal_Permissions", "Unit", Test_Self_Heal_Permissions'Access);
-      Register_Test (Diag_Registry, "Diagnostics", "Test_Self_Heal_Sessions", "Unit", Test_Self_Heal_Sessions'Access);
+      --  Diagnostics tests are Provisionally-Proven (type-safe framework)
+      --  Using Effects category for self-healing and diagnostics
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Check_Dependencies", "Unit", Test_Check_Dependencies'Access,
+                    Status_Provisionally_Proven, Category_Effects);
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Check_Configuration", "Unit", Test_Check_Configuration'Access,
+                    Status_Provisionally_Proven, Category_Effects);
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Check_Sessions", "Unit", Test_Check_Sessions'Access,
+                    Status_Provisionally_Proven, Category_Effects);
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Health_Check", "Unit", Test_Health_Check'Access,
+                    Status_Provisionally_Proven, Category_Effects);
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Self_Heal_Config", "Unit", Test_Self_Heal_Config'Access,
+                    Status_Provisionally_Proven, Category_Effects);
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Self_Heal_Permissions", "Unit", Test_Self_Heal_Permissions'Access,
+                    Status_Provisionally_Proven, Category_Effects);
+      Register_Test (Diag_Registry, "Diagnostics", "Test_Self_Heal_Sessions", "Unit", Test_Self_Heal_Sessions'Access,
+                    Status_Provisionally_Proven, Category_Effects);
    end Register_Diagnostics_Tests;
 
    --  Run all diagnostics tests

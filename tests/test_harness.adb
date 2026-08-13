@@ -36,6 +36,8 @@ package Test_Harness is
       Start_Time : Ada.Calendar.Time;
       End_Time : Ada.Calendar.Time;
       Duration : Duration;
+      Provenance : Provenance_Status := Status_Unproven;
+      Type_Safe_Category : Type_Safe_Category := Category_Dependent;
    end record;
 
    --  Test suite type
@@ -60,7 +62,9 @@ package Test_Harness is
       Suite : String;
       Name : String;
       Category : String;
-      Procedure_Access : access procedure
+      Procedure_Access : access procedure;
+      Provenance : Provenance_Status := Status_Unproven;
+      Type_Safe_Cat : Type_Safe_Category := Category_Dependent
    );
 
    --  Run all registered tests
@@ -144,6 +148,26 @@ package Test_Harness is
       Category_Property
    );
 
+   --  Provenance classification (from proven-tests-and-benches standards)
+   type Provenance_Status is (
+      Status_Actually_Proven,
+      Status_Provisionally_Proven,
+      Status_Unproven
+   );
+
+   --  Type-safe test categories (from proven-tests-and-benches standards)
+   type Type_Safe_Category is (
+      Category_Tropical,
+      Category_Epistemic,
+      Category_Choreographic,
+      Category_Dependent,
+      Category_Effects,
+      Category_Decorative,
+      Category_Ceremonial,
+      Category_Dyadic,
+      Category_Echo_Types
+   );
+
    --  Get current test registry
    function Get_Registry return Test_Registry;
 
@@ -154,5 +178,9 @@ package Test_Harness is
       Format_JUnit,
       Format_TAP
    );
+
+   --  Helper functions for provenance display
+   function Provenance_Status_To_String (Status : Provenance_Status) return String;
+   function Type_Safe_Category_To_String (Cat : Type_Safe_Category) return String;
 
 end Test_Harness;

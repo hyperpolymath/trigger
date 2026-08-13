@@ -6,6 +6,8 @@
 
 package body Test_CLI is
 
+   use Test_Harness;
+
    --  Test procedures
    procedure Test_Help_Flag is
    begin
@@ -60,16 +62,28 @@ package body Test_CLI is
    --  Register all tests
    procedure Register_CLI_Tests is
    begin
-      Register_Test (CLI_Registry, "CLI", "Test_Help_Flag", "Unit", Test_Help_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Version_Flag", "Unit", Test_Version_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Config_Flag", "Unit", Test_Config_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Platform_Flag", "Unit", Test_Platform_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Log_Level_Flag", "Unit", Test_Log_Level_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Account_Flag", "Unit", Test_Account_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Channel_Flag", "Unit", Test_Channel_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Diagnose_Flag", "Unit", Test_Diagnose_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_Self_Heal_Flag", "Unit", Test_Self_Heal_Flag'Access);
-      Register_Test (CLI_Registry, "CLI", "Test_TUI_Mode", "Unit", Test_TUI_Mode'Access);
+      --  CLI tests are Provisionally-Proven (type-safe framework)
+      --  Using Ceremonial category for CLI/UX testing
+      Register_Test (CLI_Registry, "CLI", "Test_Help_Flag", "Unit", Test_Help_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Version_Flag", "Unit", Test_Version_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Config_Flag", "Unit", Test_Config_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Platform_Flag", "Unit", Test_Platform_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Log_Level_Flag", "Unit", Test_Log_Level_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Account_Flag", "Unit", Test_Account_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Channel_Flag", "Unit", Test_Channel_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Diagnose_Flag", "Unit", Test_Diagnose_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_Self_Heal_Flag", "Unit", Test_Self_Heal_Flag'Access,
+                    Status_Provisionally_Proven, Category_Ceremonial);
+      Register_Test (CLI_Registry, "CLI", "Test_TUI_Mode", "Unit", Test_TUI_Mode'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
    end Register_CLI_Tests;
 
    --  Run all CLI tests

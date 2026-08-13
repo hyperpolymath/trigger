@@ -6,6 +6,8 @@
 
 package body Test_TUI is
 
+   use Test_Harness;
+
    --  Test procedures
    procedure Test_Main_Menu_Display is
    begin
@@ -40,12 +42,20 @@ package body Test_TUI is
    --  Register all tests
    procedure Register_TUI_Tests is
    begin
-      Register_Test (TUI_Registry, "TUI", "Test_Main_Menu_Display", "Unit", Test_Main_Menu_Display'Access);
-      Register_Test (TUI_Registry, "TUI", "Test_Platform_Selection", "Unit", Test_Platform_Selection'Access);
-      Register_Test (TUI_Registry, "TUI", "Test_Account_Management", "Unit", Test_Account_Management'Access);
-      Register_Test (TUI_Registry, "TUI", "Test_Session_Management", "Unit", Test_Session_Management'Access);
-      Register_Test (TUI_Registry, "TUI", "Test_Reporting_Flow", "Unit", Test_Reporting_Flow'Access);
-      Register_Test (TUI_Registry, "TUI", "Test_Diagnostics_Menu", "Unit", Test_Diagnostics_Menu'Access);
+      --  TUI tests are Provisionally-Proven (type-safe framework)
+      --  Using Choreographic category for TUI/multi-step interactions
+      Register_Test (TUI_Registry, "TUI", "Test_Main_Menu_Display", "Unit", Test_Main_Menu_Display'Access,
+                    Status_Provisionally_Proven, Category_Choreographic);
+      Register_Test (TUI_Registry, "TUI", "Test_Platform_Selection", "Unit", Test_Platform_Selection'Access,
+                    Status_Provisionally_Proven, Category_Choreographic);
+      Register_Test (TUI_Registry, "TUI", "Test_Account_Management", "Unit", Test_Account_Management'Access,
+                    Status_Provisionally_Proven, Category_Choreographic);
+      Register_Test (TUI_Registry, "TUI", "Test_Session_Management", "Unit", Test_Session_Management'Access,
+                    Status_Provisionally_Proven, Category_Choreographic);
+      Register_Test (TUI_Registry, "TUI", "Test_Reporting_Flow", "Unit", Test_Reporting_Flow'Access,
+                    Status_Provisionally_Proven, Category_Choreographic);
+      Register_Test (TUI_Registry, "TUI", "Test_Diagnostics_Menu", "Unit", Test_Diagnostics_Menu'Access,
+                    Status_Provisionally_Proven, Category_Choreographic);
    end Register_TUI_Tests;
 
    --  Run all TUI tests

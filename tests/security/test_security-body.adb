@@ -6,6 +6,8 @@
 
 package body Test_Security is
 
+   use Test_Harness;
+
    --  Test procedures
    procedure Test_Secure_Configuration is
    begin
@@ -40,12 +42,20 @@ package body Test_Security is
    --  Register all tests
    procedure Register_Security_Tests is
    begin
-      Register_Test (Security_Registry, "Security", "Test_Secure_Configuration", "Security", Test_Secure_Configuration'Access);
-      Register_Test (Security_Registry, "Security", "Test_Secure_Session_Management", "Security", Test_Secure_Session_Management'Access);
-      Register_Test (Security_Registry, "Security", "Test_Input_Validation", "Security", Test_Input_Validation'Access);
-      Register_Test (Security_Registry, "Security", "Test_Crypto_Operations", "Security", Test_Crypto_Operations'Access);
-      Register_Test (Security_Registry, "Security", "Test_Access_Control", "Security", Test_Access_Control'Access);
-      Register_Test (Security_Registry, "Security", "Test_Audit_Logging", "Security", Test_Audit_Logging'Access);
+      --  Security tests are Provisionally-Proven (type-safe framework)
+      --  Using Epistemic category for security/access control testing
+      Register_Test (Security_Registry, "Security", "Test_Secure_Configuration", "Security", Test_Secure_Configuration'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
+      Register_Test (Security_Registry, "Security", "Test_Secure_Session_Management", "Security", Test_Secure_Session_Management'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
+      Register_Test (Security_Registry, "Security", "Test_Input_Validation", "Security", Test_Input_Validation'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
+      Register_Test (Security_Registry, "Security", "Test_Crypto_Operations", "Security", Test_Crypto_Operations'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
+      Register_Test (Security_Registry, "Security", "Test_Access_Control", "Security", Test_Access_Control'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
+      Register_Test (Security_Registry, "Security", "Test_Audit_Logging", "Security", Test_Audit_Logging'Access,
+                    Status_Provisionally_Proven, Category_Epistemic);
    end Register_Security_Tests;
 
    --  Run all security tests

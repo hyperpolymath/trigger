@@ -22,6 +22,8 @@ package body Test_Harness is
       Procedure : access procedure;
       Line : Integer;
       File : Unbounded_String;
+      Provenance : Provenance_Status := Status_Unproven;
+      Type_Safe_Cat : Type_Safe_Category := Category_Dependent;
    end record;
 
    --  Test registry implementation
@@ -55,7 +57,9 @@ package body Test_Harness is
       Suite : String;
       Name : String;
       Category : String;
-      Procedure_Access : access procedure
+      Procedure_Access : access procedure;
+      Provenance : Provenance_Status := Status_Unproven;
+      Type_Safe_Cat : Type_Safe_Category := Category_Dependent
    ) is
    begin
       Initialize_Registry (Registry);
@@ -81,7 +85,9 @@ package body Test_Harness is
          To_Unbounded_String (Category),
          Procedure_Access,
          0,
-         To_Unbounded_String ("")
+         To_Unbounded_String (""),
+         Provenance,
+         Type_Safe_Cat
       );
    end Register_Test;
 
@@ -105,7 +111,9 @@ package body Test_Harness is
          Null_Unbounded_String,
          Start_Time,
          Start_Time,
-         0.0
+         0.0,
+         Entry.Provenance,
+         Entry.Type_Safe_Cat
       );
       
       begin
@@ -142,7 +150,9 @@ package body Test_Harness is
             Message => Message,
             Start_Time => Start_Time,
             End_Time => End_Time,
-            Duration => Duration
+            Duration => Duration,
+            Provenance => Entry.Provenance,
+            Type_Safe_Category => Entry.Type_Safe_Cat
          );
       end;
    end Run_Single_Test_Internal;
@@ -283,17 +293,27 @@ package body Test_Harness is
             if Output_Format = "text" then
                case Status.Result is
                   when Result_Pass =>
-                     Ada.Text_IO.Put_Line ("[PASS] " & To_String (Status.Name));
+                     Ada.Text_IO.Put_Line ("[PASS] " & To_String (Status.Name) & 
+                                        " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                        "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                   when Result_Fail =>
                      Ada.Text_IO.Put_Line ("[FAIL] " & To_String (Status.Name) & ": " & 
-                                        To_String (Status.Message));
+                                        To_String (Status.Message) & 
+                                        " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                        "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                   when Result_Error =>
                      Ada.Text_IO.Put_Line ("[ERROR] " & To_String (Status.Name) & ": " & 
-                                        To_String (Status.Message));
+                                        To_String (Status.Message) & 
+                                        " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                        "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                   when Result_Skip =>
-                     Ada.Text_IO.Put_Line ("[SKIP] " & To_String (Status.Name));
+                     Ada.Text_IO.Put_Line ("[SKIP] " & To_String (Status.Name) & 
+                                        " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                        "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                   when Result_Timeout =>
-                     Ada.Text_IO.Put_Line ("[TIMEOUT] " & To_String (Status.Name));
+                     Ada.Text_IO.Put_Line ("[TIMEOUT] " & To_String (Status.Name) & 
+                                        " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                        "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                end case;
             end if;
          end;
@@ -356,15 +376,25 @@ package body Test_Harness is
                if Output_Format = "text" then
                   case Status.Result is
                      when Result_Pass =>
-                        Ada.Text_IO.Put_Line ("[PASS] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[PASS] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Fail =>
-                        Ada.Text_IO.Put_Line ("[FAIL] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[FAIL] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Error =>
-                        Ada.Text_IO.Put_Line ("[ERROR] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[ERROR] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Skip =>
-                        Ada.Text_IO.Put_Line ("[SKIP] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[SKIP] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Timeout =>
-                        Ada.Text_IO.Put_Line ("[TIMEOUT] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[TIMEOUT] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                   end case;
                end if;
             end;
@@ -410,17 +440,27 @@ package body Test_Harness is
                if Output_Format = "text" then
                   case Status.Result is
                      when Result_Pass =>
-                        Ada.Text_IO.Put_Line ("[PASS] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[PASS] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Fail =>
                         Ada.Text_IO.Put_Line ("[FAIL] " & To_String (Status.Name) & ": " & 
-                                           To_String (Status.Message));
+                                           To_String (Status.Message) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Error =>
                         Ada.Text_IO.Put_Line ("[ERROR] " & To_String (Status.Name) & ": " & 
-                                           To_String (Status.Message));
+                                           To_String (Status.Message) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Skip =>
-                        Ada.Text_IO.Put_Line ("[SKIP] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[SKIP] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                      when Result_Timeout =>
-                        Ada.Text_IO.Put_Line ("[TIMEOUT] " & To_String (Status.Name));
+                        Ada.Text_IO.Put_Line ("[TIMEOUT] " & To_String (Status.Name) & 
+                                           " [" & Provenance_Status_To_String (Status.Provenance) & 
+                                           "/" & Type_Safe_Category_To_String (Status.Type_Safe_Category) & "]");
                   end case;
                end if;
                
@@ -433,6 +473,44 @@ package body Test_Harness is
          Ada.Text_IO.Put_Line ("Test not found: " & Suite_Name & "." & Test_Name);
       end if;
    end Run_Single_Test;
+
+   --  Convert provenance status to string
+   function Provenance_Status_To_String (Status : Provenance_Status) return String is
+   begin
+      case Status is
+         when Status_Actually_Proven =>
+            return "Actually-Proven";
+         when Status_Provisionally_Proven =>
+            return "Provisionally-Proven";
+         when Status_Unproven =>
+            return "Unproven";
+      end case;
+   end Provenance_Status_To_String;
+
+   --  Convert type-safe category to string
+   function Type_Safe_Category_To_String (Cat : Type_Safe_Category) return String is
+   begin
+      case Cat is
+         when Category_Tropical =>
+            return "Tropical";
+         when Category_Epistemic =>
+            return "Epistemic";
+         when Category_Choreographic =>
+            return "Choreographic";
+         when Category_Dependent =>
+            return "Dependent";
+         when Category_Effects =>
+            return "Effects";
+         when Category_Decorative =>
+            return "Decorative";
+         when Category_Ceremonial =>
+            return "Ceremonial";
+         when Category_Dyadic =>
+            return "Dyadic";
+         when Category_Echo_Types =>
+            return "Echo-Types";
+      end case;
+   end Type_Safe_Category_To_String;
 
 begin
    --  Initialize the global registry

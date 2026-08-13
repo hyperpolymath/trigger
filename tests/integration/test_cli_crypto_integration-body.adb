@@ -6,6 +6,8 @@
 
 package body Test_CLI_Crypto_Integration is
 
+   use Test_Harness;
+
    --  Test procedures
    procedure Test_CLI_Config_With_Crypto is
    begin
@@ -25,12 +27,17 @@ package body Test_CLI_Crypto_Integration is
    --  Register all tests
    procedure Register_CLI_Crypto_Tests is
    begin
+      --  Integration tests are Provisionally-Proven (type-safe framework)
+      --  Using Dyadic category for integration between two components
       Register_Test (Integration_Registry, "Integration", "Test_CLI_Config_With_Crypto", 
-                    "Integration", Test_CLI_Config_With_Crypto'Access);
+                    "Integration", Test_CLI_Config_With_Crypto'Access,
+                    Status_Provisionally_Proven, Category_Dyadic);
       Register_Test (Integration_Registry, "Integration", "Test_CLI_Commands_With_Crypto", 
-                    "Integration", Test_CLI_Commands_With_Crypto'Access);
+                    "Integration", Test_CLI_Commands_With_Crypto'Access,
+                    Status_Provisionally_Proven, Category_Dyadic);
       Register_Test (Integration_Registry, "Integration", "Test_Platform_Selection_With_Crypto", 
-                    "Integration", Test_Platform_Selection_With_Crypto'Access);
+                    "Integration", Test_Platform_Selection_With_Crypto'Access,
+                    Status_Provisionally_Proven, Category_Dyadic);
    end Register_CLI_Crypto_Tests;
 
    --  Run all integration tests
