@@ -131,11 +131,22 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
     - ffi/zig/telegram/telegram.zig: 6 UnsafeCode (pointer casts) - ACCEPTABLE: Required for Zig-Ada FFI, documented with SAFETY comments
     - ffi/zig/crypto/crypto.zig: 2 UnsafeFFI (C interop) - ACCEPTABLE: Required for libsodium/liboqs integration
   - Suppression comments added to source files but not yet recognized by panic-attack (requires line-level findings)
-* Implement complete test coverage from proven-tests-and-benches repo - BLOCKED: Requires deep understanding of proven-tests framework
-  - Current test suite in tests/ is basic with placeholder assertions
-  - Need to create comprehensive tests based on proven-tests-and-benches standards
-  - Need Idris2 test framework integration
-* Ensure all tests and benches meet test-and-benches standards - BLOCKED: Depends on above
+* Implement complete test coverage from proven-tests-and-benches repo - IN PROGRESS
+  - Test harness framework exists (test_harness.adb) with:
+    * Test registry and discovery
+    * Result aggregation and coverage tracking
+    * Multiple output formats (text, JSON, JUnit, TAP)
+    * Assertion procedures (Assert, Assert_Equal, Assert_Not_Equal, etc.)
+    * Test categories (Unit, Integration, System, Benchmark, Security, Acceptance, Property)
+  - Test suite exists (test_trigger.adb) with basic structure
+  - Unit test specs created (test_cryptography.adb)
+  - Current state: Placeholder assertions need to be replaced with actual tests
+  - Test directories exist: unit/, integration/, system/, security/, benchmark/
+  - Need to populate with actual test implementations
+* Ensure all tests and benches meet test-and-benches standards - PENDING
+  - Need to align with proven-tests-and-benches classification system
+  - Need to implement Actually-Proven, Provisionally-Proven, Unproven tiers
+  - Need to add type-safe test categories (Tropical, Epistemic, Choreographic, etc.)
 
 === E. Security Enhancements (IN PROGRESS 2026-08-13)
 * Complete www/.well-known/ setup with all Resource Records - COMPLETED
