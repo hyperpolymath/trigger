@@ -1,0 +1,50 @@
+= Trigger: Proof Needs and Verification Ladder
+:description: Formal verification needs and Agda integration roadmap
+:author: hyperpolymath
+:revdate: 2026-08-13
+:language: en
+:toc: auto
+:toclevels: 3
+
+== Introduction
+
+This document outlines the formal verification needs for the *Trigger* repository. While the current Ada/SPARK implementation provides robust safety and state guarantees, this document establishes a **Proof Ladder** to guide the supplementary integration of Agda for higher-order semantic and protocol-level proofs.
+
+== Proof Ladder
+
+The proof ladder bridges the operational reality of the Ada/SPARK Telegram reporting tool with high-assurance formalisms. It is structured across four progressive levels:
+
+=== Level 1: Memory Safety & Dataflow (SPARK Silver)
+*Status:* Largely covered by existing SPARK framework.
+
+*Needs:*
+* Ensure Absence of Runtime Errors (AoRE) across all session handling, file operations, and encryption boundaries.
+* Prove strictly initializing dataflow to prevent leaking Telegram API hashes or active session tokens.
+
+=== Level 2: State Machine Correctness (SPARK Gold)
+*Status:* Partially implemented; needs explicit state invariants.
+
+*Needs:*
+* Formalize the state transitions of the reporting agent (`Idle -> Authenticating -> RateLimited(FloodWait) -> Reporting -> Idle`).
+* Prove that a `FloodWait` state strictly blocks outbound API calls for the duration of the wait timeout.
+
+=== Level 3: Protocol & Workflow Soundness (Agda Supplement)
+*Status:* Unimplemented (New Agda Integration Target)
+
+*Needs:*
+* Define the semantic meaning of a "Report" action using dependent types.
+* **Epistemic Tracing:** Formally define the preconditions for a report. For instance, prove that a report is only issued if the agent holds evidence that the channel violates the configured policy.
+* Prove that the multi-account dispatch sequence guarantees a fair cycle without starving valid accounts.
+
+=== Level 4: Cryptographic & API Equivalence (Agda + Idris2)
+*Status:* Unimplemented (New Agda Integration Target)
+
+*Needs:*
+* Prove that the sequence of Idris2/Zig FFI calls correctly maps to the well-formedness requirements of the MTProto / Telegram API.
+* Prove that session AES encryption is functionally correct and structurally opaque to unauthorized observers using Agda's cryptographic modeling.
+
+== Roadmap
+
+1. Consolidate SPARK annotations for Level 1 and Level 2.
+2. Draft the initial Agda specifications for Level 3 (Epistemic Tracing).
+3. Connect Idris2 API abstractions with Agda soundness proofs (Level 4).
