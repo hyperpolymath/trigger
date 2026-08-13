@@ -232,15 +232,33 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
    * panic-attack has been run and issues documented
    * Suppression comments added for known-acceptable issues
    * pons is still in planning phase (not yet implemented)
-3. Next: Priority E: Security Enhancements
-   * Complete www/.well-known/ setup with all Resource Records
-   * Ensure CAA, TLSA, ZONEMD, SSHFP, OPENPGPKEY are properly configured
-4. Then Priority C: CLI and TUI
-   * Ensure CLI has extensive flags and high arity
-   * Implement full-featured help and man options
-   * Create comprehensive Justfile with relevant recipes
-5. Then Priority F: Launcher
-6. Finally: Complete test coverage from proven-tests-and-benches
+3. Priority E: Security Enhancements - COMPLETED
+   * www/.well-known/ setup completed with all Resource Records
+   * CAA, TLSA, ZONEMD, SSHFP, OPENPGPKEY all properly configured
+   * Additional security files added (dnt-policy.txt, sshfp, openpgpkey docs)
+4. Priority C: CLI and TUI - COMPLETED
+   * CLI has extensive flags (40+) and high arity
+   * Full-featured help and man options implemented
+   * Comprehensive Justfile with 30+ recipes
+   * Self-diagnostics and self-healing implemented
+   * Fault-tolerance via exception handling
+   * ADI TUI built with multiple menu hierarchies
+5. Priority F: Launcher - COMPLETED
+   * Launcher compliant with launcher-standard.a2ml v0.3.0
+   * All required modes implemented
+   * Integration with container setup verified
+6. Priority D: Test Coverage - IN PROGRESS
+   * Test harness framework exists
+   * Test suite structure exists
+   * Need to populate with actual test implementations
+   * Need alignment with proven-tests-and-benches standards
+
+== Remaining Work (in order)
+
+1. Complete test implementations for all modules (unit, integration, system, security, benchmark)
+2. Align test classification with proven-tests-and-benches (Actually-Proven, Provisionally-Proven, Unproven)
+3. Add type-safe test categories (Tropical, Epistemic, Choreographic, etc.)
+4. Final review and validation
 
 == Blockers and Notes
 
