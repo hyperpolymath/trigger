@@ -3,6 +3,19 @@
 --  Provides cryptographic operations using EdD448 + Kyber-1024 + BLAKE3 + SHAKE-512.
 --  
 --  Author: hyperpolymath
+--  
+--  Architecture: Ada/SPARK <- Idris2 <- Zig (FFI) <- libsodium/liboqs
+--  
+--  Implementation Status:
+--  - FFI bindings: Available via Trigger.FFI.Crypto
+--  - Zig implementation: ffi/zig/crypto/crypto.zig
+--  - Ada implementation: Placeholder (uses FFI when available)
+--  
+--  For production use:
+--  1. Install libsodium (EdD448, BLAKE3, SHAKE-512)
+--  2. Install liboqs with Kyber-1024 support
+--  3. Update Zig FFI to call actual library functions
+--  4. Update Ada implementation to use FFI calls
 
 with Ada.Strings.Unbounded;
 
