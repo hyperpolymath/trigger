@@ -61,6 +61,20 @@ package body Trigger.CLI.Argument_Parser is
       end if;
    end String_To_Report_Reason;
 
+   --  Helper function to convert string to Platform_Type
+   function String_To_Platform (S : String) return Platform_Type is
+   begin
+      if S = "telegram" or S = "TELEGRAM" or S = "tg" then
+         return Platform_Telegram;
+      elsif S = "discord" or S = "DISCORD" or S = "dc" then
+         return Platform_Discord;
+      elsif S = "twitter" or S = "TWITTER" or S = "tw" or S = "x" then
+         return Platform_Twitter;
+      else
+         return Platform_Telegram;  -- Default to Telegram
+      end if;
+   end String_To_Platform;
+
    --  Helper function to check if a string is a valid integer
    function Is_Integer (S : String) return Boolean is
       use Ada.Strings;
@@ -117,6 +131,10 @@ package body Trigger.CLI.Argument_Parser is
          API_ID => 0,
          API_Hash => To_Unbounded_String (""),
          Set_Credentials => False,
+         Platform => Platform_Telegram,
+         List_Platforms => False,
+         Discord_Token => To_Unbounded_String (""),
+         Twitter_Token => To_Unbounded_String (""),
          Session_Dir => To_Unbounded_String (""),
          List_Sessions => False,
          Clean_Sessions => False,
@@ -239,6 +257,39 @@ package body Trigger.CLI.Argument_Parser is
             elsif Arg = "--set-credentials" then
                Config.Set_Credentials := True;
                J := J + 1;
+
+            --  Platform selection flags
+            elsif Arg = "-P" or Arg = "--platform" then
+               if J < Arg_Count then
+                  Config.Platform := String_To_Platform (Ada.Command_Line.Argument (J + 1));
+                  J := J + 2;
+               else
+                  Exit_Code := 1;
+                  Ada.Text_IO.Put_Line ("Error: --platform requires a platform name argument");
+                  J := J + 1;
+               end if;
+            elsif Arg = "--list-platforms" then
+               Config.List_Platforms := True;
+               Mode := Mode_List_Platforms;
+               J := J + 1;
+            elsif Arg = "--discord-token" then
+               if J < Arg_Count then
+                  Config.Discord_Token := To_Unbounded_String (Ada.Command_Line.Argument (J + 1));
+                  J := J + 2;
+               else
+                  Exit_Code := 1;
+                  Ada.Text_IO.Put_Line ("Error: --discord-token requires a token argument");
+                  J := J + 1;
+               end if;
+            elsif Arg = "--twitter-token" then
+               if J < Arg_Count then
+                  Config.Twitter_Token := To_Unbounded_String (Ada.Command_Line.Argument (J + 1));
+                  J := J + 2;
+               else
+                  Exit_Code := 1;
+                  Ada.Text_IO.Put_Line ("Error: --twitter-token requires a token argument");
+                  J := J + 1;
+               end if;
 
             --  Session flags
             elsif Arg = "-s" or Arg = "--session-dir" then
@@ -531,6 +582,11 @@ package body Trigger.CLI.Argument_Parser is
       Ada.Text_IO.Put_Line ("  API:");
       Ada.Text_IO.Put_Line ("    API_ID: " & Integer'Image (Config.API_ID));
       Ada.Text_IO.Put_Line ("    Set_Credentials: " & Boolean'Image (Config.Set_Credentials));
+      Ada.Text_IO.Put_Line ("  Platform:");
+      Ada.Text_IO.Put_Line ("    Platform: " & Platform_Type'Image (Config.Platform));
+      Ada.Text_IO.Put_Line ("    List_Platforms: " & Boolean'Image (Config.List_Platforms));
+      Ada.Text_IO.Put_Line ("    Discord_Token: " & (if Config.Discord_Token = "" then "[not set]" else "[set]"));
+      Ada.Text_IO.Put_Line ("    Twitter_Token: " & (if Config.Twitter_Token = "" then "[not set]" else "[set]"));
       Ada.Text_IO.Put_Line ("  Session:");
       Ada.Text_IO.Put_Line ("    Session_Dir: " & To_String (Config.Session_Dir));
       Ada.Text_IO.Put_Line ("    List_Sessions: " & Boolean'Image (Config.List_Sessions));

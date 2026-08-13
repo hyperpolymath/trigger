@@ -14,6 +14,7 @@ package Trigger.CLI.Argument_Parser is
       Mode_Man,
       Mode_Version,
       Mode_License,
+      Mode_List_Platforms,
       Mode_Diagnose,
       Mode_Self_Heal,
       Mode_Check_Deps,
@@ -41,6 +42,9 @@ package Trigger.CLI.Argument_Parser is
       Reason_Scam,
       Reason_Other
    );
+
+   --  Platform type
+   type Platform_Type is (Platform_Telegram, Platform_Discord, Platform_Twitter);
 
    --  Configuration record for CLI options
    type Configuration_Type is tagged record
@@ -79,6 +83,14 @@ package Trigger.CLI.Argument_Parser is
         Ada.Strings.Unbounded.To_Unbounded_String ("");
       No_Color : Boolean := False;
       Quiet : Boolean := False;
+      
+      --  Platform selection
+      Platform : Platform_Type := Platform_Telegram;
+      List_Platforms : Boolean := False;
+      Discord_Token : Ada.Strings.Unbounded.Unbounded_String := 
+        Ada.Strings.Unbounded.To_Unbounded_String ("");
+      Twitter_Token : Ada.Strings.Unbounded.Unbounded_String := 
+        Ada.Strings.Unbounded.To_Unbounded_String ("");
       
       --  Account settings
       Specific_Account : Ada.Strings.Unbounded.Unbounded_String := 

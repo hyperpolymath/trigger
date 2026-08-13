@@ -19,18 +19,20 @@ package body Trigger.CLI.Man_Page is
         "trigger(1) - Trigger User Manual" & ASCII.LF & 
         "" & ASCII.LF & 
         "NAME" & ASCII.LF & 
-        "       trigger - Telegram channel reporting utility with multi-account management" & ASCII.LF & 
+        "       trigger - Multi-platform social media reporting utility with multi-account management" & ASCII.LF & 
         "" & ASCII.LF & 
         "SYNOPSIS" & ASCII.LF & 
         "       trigger [OPTIONS] [COMMAND]" & ASCII.LF & 
         "" & ASCII.LF & 
         "DESCRIPTION" & ASCII.LF & 
-        "       trigger is a Telegram channel reporting utility featuring multi-account" & ASCII.LF & 
+        "       trigger is a multi-platform social media reporting utility featuring multi-account" & ASCII.LF & 
         "       management, persistent sessions, proxy support, configurable reporting" & ASCII.LF & 
-        "       options, automatic FloodWait handling, and an interactive TUI." & ASCII.LF & 
+        "       options, automatic rate limit handling, and an interactive TUI." & ASCII.LF & 
+        "" & ASCII.LF & 
+        "       Supported platforms: Telegram, Discord, Twitter/X" & ASCII.LF & 
         "" & ASCII.LF & 
         "       This implementation uses Ada/SPARK for the core application, Zig for FFI" & ASCII.LF & 
-        "       bindings to Telegram API, and Idris2 for API layer abstractions." & ASCII.LF & 
+        "       bindings, and Idris2 for API layer abstractions following the unified-hexadeca-api." & ASCII.LF & 
         "" & ASCII.LF & 
         "ORIGINAL ATTRIBUTION" & ASCII.LF & 
         "       This project implements functionality originally designed in Ripper by" & ASCII.LF & 
@@ -49,6 +51,12 @@ package body Trigger.CLI.Man_Page is
         "                                 the default" & ASCII.LF & 
         "       --save-config              Save the current configuration to the specified file" & ASCII.LF & 
         "       --reset-config             Reset configuration to default values" & ASCII.LF & 
+        "" & ASCII.LF & 
+        "   Platform Selection Options:" & ASCII.LF & 
+        "       -P PLATFORM, --platform PLATFORM    Set the platform (telegram, discord, twitter)" & ASCII.LF & 
+        "       --list-platforms          List all supported platforms and exit" & ASCII.LF & 
+        "       --discord-token TOKEN     Set the Discord bot/user token" & ASCII.LF & 
+        "       --twitter-token TOKEN     Set the Twitter bearer token" & ASCII.LF & 
         "" & ASCII.LF & 
         "   API Credentials Options:" & ASCII.LF & 
         "       -a ID, --api-id ID          Set the Telegram API ID" & ASCII.LF & 
@@ -125,6 +133,9 @@ package body Trigger.CLI.Man_Page is
         "       TRIGGER_LOG_LEVEL     Log level. Default: info" & ASCII.LF & 
         "       TRIGGER_API_ID        Telegram API ID" & ASCII.LF & 
         "       TRIGGER_API_HASH      Telegram API hash" & ASCII.LF & 
+        "       TRIGGER_PLATFORM      Social media platform (telegram, discord, twitter)" & ASCII.LF & 
+        "       TRIGGER_DISCORD_TOKEN Discord bot/user token" & ASCII.LF & 
+        "       TRIGGER_TWITTER_TOKEN Twitter bearer token" & ASCII.LF & 
         "       TRIGGER_PROXY         Proxy URL" & ASCII.LF & 
         "       NO_COLOR              If set to any value, disables colored output" & ASCII.LF & 
         "" & ASCII.LF & 
@@ -145,8 +156,18 @@ package body Trigger.CLI.Man_Page is
         "       Show version:" & ASCII.LF & 
         "           trigger --version" & ASCII.LF & 
         "" & ASCII.LF & 
+        "       List supported platforms:" & ASCII.LF & 
+        "           trigger --list-platforms" & ASCII.LF & 
+        "" & ASCII.LF & 
+        "   Platform Selection:" & ASCII.LF & 
+        "       Set platform to Discord:" & ASCII.LF & 
+        "           trigger --platform discord --discord-token YOUR_TOKEN" & ASCII.LF & 
+        "" & ASCII.LF & 
+        "       Set platform to Twitter:" & ASCII.LF & 
+        "           trigger --platform twitter --twitter-token YOUR_TOKEN" & ASCII.LF & 
+        "" & ASCII.LF & 
         "   Configuration:" & ASCII.LF & 
-        "       Set API credentials:" & ASCII.LF & 
+        "       Set Telegram API credentials:" & ASCII.LF & 
         "           trigger --api-id 12345 --api-hash abcdef123456 --save-config" & ASCII.LF & 
         "" & ASCII.LF & 
         "       Or interactively:" & ASCII.LF & 
@@ -168,6 +189,10 @@ package body Trigger.CLI.Man_Page is
         "                  --delay 3.0 \\" & ASCII.LF & 
         "                  --reason spam \\" & ASCII.LF & 
         "                  --all-accounts" & ASCII.LF & 
+        "" & ASCII.LF & 
+        "       Report on Discord platform:" & ASCII.LF & 
+        "           trigger --platform discord --discord-token YOUR_TOKEN" & ASCII.LF & 
+        "                  --channel general --report-count 5" & ASCII.LF & 
         "" & ASCII.LF & 
         "   Session Management:" & ASCII.LF & 
         "       List sessions:" & ASCII.LF & 
@@ -194,7 +219,7 @@ package body Trigger.CLI.Man_Page is
         "       Trigger includes comprehensive self-diagnostic capabilities that check:" & ASCII.LF & 
         "       GNAT compiler availability, Zig compiler availability, Idris2 compiler" & ASCII.LF & 
         "       availability (optional), Configuration file validity, Session directory" & ASCII.LF & 
-        "       existence and permissions, Session file integrity, Telegram API connectivity," & ASCII.LF & 
+        "       existence and permissions, Session file integrity, Platform API connectivity," & ASCII.LF & 
         "       Disk space availability." & ASCII.LF & 
         "" & ASCII.LF & 
         "SELF-HEALING" & ASCII.LF & 
@@ -208,7 +233,7 @@ package body Trigger.CLI.Man_Page is
         "       Session state persistence for recovery after crashes, Network error" & ASCII.LF & 
         "       handling with reconnection logic, Partial failure continuation," & ASCII.LF & 
         "       Comprehensive error logging for post-mortem analysis, Circuit breaker" & ASCII.LF & 
-        "       pattern to prevent repeated failures." & ASCII.LF & 
+        "       pattern to prevent repeated failures, Multi-platform session management." & ASCII.LF & 
         "" & ASCII.LF & 
         "SECURITY" & ASCII.LF & 
         "       Session data can be encrypted using EdD448 + Kyber-1024 + BLAKE3 + SHAKE-512," & ASCII.LF & 
@@ -230,11 +255,14 @@ package body Trigger.CLI.Man_Page is
         "       See LICENSE and LICENSES/ for full license texts." & ASCII.LF & 
         "" & ASCII.LF & 
         "SEE ALSO" & ASCII.LF & 
-        "       Ripper (original concept): https://github.com/2nixx/Ripper" & ASCII.LF & 
+        "       Trigger source: https://github.com/hyperpolymath/trigger" & ASCII.LF & 
+        "       Original Ripper concept: https://github.com/2nixx/Ripper" & ASCII.LF & 
         "       Ada/SPARK: https://www.adacore.com" & ASCII.LF & 
         "       Zig: https://ziglang.org" & ASCII.LF & 
         "       Idris2: https://idris-lang.org" & ASCII.LF & 
-        "       Telegram API: https://core.telegram.org/api";
+        "       Telegram API: https://core.telegram.org/api" & ASCII.LF & 
+        "       Discord API: https://discord.com/developers/docs/intro" & ASCII.LF & 
+        "       Twitter API: https://developer.twitter.com/en/docs/twitter-api";
    end Get_Man_Page_Text;
 
 end Trigger.CLI.Man_Page;

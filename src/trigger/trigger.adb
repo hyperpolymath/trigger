@@ -1,11 +1,13 @@
 --  Trigger - Main Application Entry Point
 --  
---  Telegram channel reporting utility with multi-account management
+--  Multi-platform social media reporting utility with multi-account management
+--  Supported platforms: Telegram, Discord, Twitter/X
 --  
 --  Author: hyperpolymath
 --  
 --  This is the main entry point for the Trigger application.
 --  It provides both a comprehensive CLI and an ADI TUI (Advanced Dialog Interface).
+--  Architecture: Ada/SPARK core, Idris2 ABI, Zig FFI (unified-hexadeca-api)
 
 with Ada.Text_IO;
 with Ada.Strings.Unbounded;
@@ -53,6 +55,13 @@ begin
             
          when Argument_Parser.Mode_License =>
             Version_Info.Display_License;
+            
+         when Argument_Parser.Mode_List_Platforms =>
+            Ada.Text_IO.Put_Line ("Supported platforms:");
+            Ada.Text_IO.Put_Line ("  - telegram (or tg)");
+            Ada.Text_IO.Put_Line ("  - discord (or dc)");
+            Ada.Text_IO.Put_Line ("  - twitter (or tw, x)");
+            Ada.Text_IO.Put_Line ("Default: telegram");
             
          when Argument_Parser.Mode_Diagnose =>
             System_Check.Run_Diagnostics (Config, Exit_Code);

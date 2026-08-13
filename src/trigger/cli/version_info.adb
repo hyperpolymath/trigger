@@ -27,6 +27,11 @@ package body Trigger.CLI.Version_Info is
         "Author: " & Trigger.Author_Name & " <" & Trigger.Author_Email & ">" & ASCII.LF & 
         "Project URL: " & Trigger.Project_URL & ASCII.LF & 
         "" & ASCII.LF & 
+        "Multi-platform social media reporting utility" & ASCII.LF & 
+        "Supported platforms: Telegram, Discord, Twitter/X" & ASCII.LF & 
+        "" & ASCII.LF & 
+        "Architecture: Ada/SPARK core, Idris2 ABI, Zig FFI (unified-hexadeca-api)" & ASCII.LF & 
+        "" & ASCII.LF & 
         "Original concept: " & Trigger.Original_Concept & 
         " by " & Trigger.Original_Author & ASCII.LF & 
         "" & ASCII.LF & 
@@ -66,8 +71,9 @@ package body Trigger.CLI.Version_Info is
         "This project implements functionality originally designed in " & 
         Trigger.Original_Concept & " by " & Trigger.Original_Author & "." & ASCII.LF & 
         "The original concept and feature set are acknowledged with gratitude." & ASCII.LF & 
-        "This implementation is a complete rewrite in Ada/SPARK with Zig FFI bindings," & ASCII.LF & 
-        "and does not contain any code from the original project.";
+        "This implementation is a complete rewrite in Ada/SPARK with Zig FFI bindings" & ASCII.LF & 
+        "following the unified-hexadeca-api, and Idris2 for API abstractions." & ASCII.LF & 
+        "It does not contain any code from the original project.";
    end Get_License_Text;
 
 end Trigger.CLI.Version_Info;

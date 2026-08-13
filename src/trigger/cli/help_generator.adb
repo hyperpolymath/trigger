@@ -36,6 +36,12 @@ package body Trigger.CLI.Help_Generator is
         "  --api-hash HASH            Set the Telegram API hash" & ASCII.LF & 
         "  --set-credentials         Set API credentials interactively" & ASCII.LF & 
         "" & ASCII.LF & 
+        "Platform Selection Options:" & ASCII.LF & 
+        "  -P PLATFORM, --platform PLATFORM    Set the platform (telegram, discord, twitter)" & ASCII.LF & 
+        "  --list-platforms          List all supported platforms and exit" & ASCII.LF & 
+        "  --discord-token TOKEN     Set the Discord bot/user token" & ASCII.LF & 
+        "  --twitter-token TOKEN     Set the Twitter bearer token" & ASCII.LF & 
+        "" & ASCII.LF & 
         "Session Options:" & ASCII.LF & 
         "  -s DIR, --session-dir DIR  Set the directory for session files" & ASCII.LF & 
         "  --list-sessions            List all session files" & ASCII.LF & 
