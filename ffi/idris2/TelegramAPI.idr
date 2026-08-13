@@ -199,10 +199,13 @@ sessionDisconnect : Session -> Effect ()
 sessionDisconnect _ = pure ()
 
 -- Legacy message reporting
-reportMessage : Session -> String -> Int -> String -> Effect Bool
-reportMessage _ channel msgId reason = pure True
+data IsAuthorized : Session -> Type where
+  MkIsAuthorized : IsAuthorized session
 
-reportMessages : Session -> String -> List Int -> String -> Effect Bool
+reportMessage : {auto prf : IsAuthorized session} -> (session : Session) -> String -> Int -> String -> Effect Bool
+reportMessage session channel msgId reason = pure True
+
+reportMessages : {auto prf : IsAuthorized sess} -> (sess : Session) -> String -> List Int -> String -> Effect Bool
 reportMessages sess channel msgIds reason = pure True
 
 -- Legacy message retrieval
