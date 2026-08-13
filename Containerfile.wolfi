@@ -87,8 +87,11 @@ RUN wget -q https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh
 ENV PATH="/root/.guix-profile/bin:/root/.config/guix/current/bin:${PATH}" \
     GUIX_LOCPATH="/root/.guix-profile/lib/locale"
 
-# Pull Guix channels (this may take a while)
-RUN guix pull 2>&1 || true
+# Copy channels configuration
+COPY channels.scm /etc/guix/channels.scm
+
+# Pull Guix channels with custom configuration (this may take a while)
+RUN guix pull -C /etc/guix/channels.scm 2>&1 || guix pull 2>&1 || true
 
 # =============================================================================
 # Stage 2: Install GNAT (Ada/SPARK) via Guix

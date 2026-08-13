@@ -21,7 +21,8 @@ ENV APP_NAME=trigger \
     APP_VERSION=1.0.0 \
     BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
     BUILD_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo 'unknown')" \
-    BUILD_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
+    BUILD_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')" \
+    DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
 
@@ -32,6 +33,12 @@ RUN apt-get update && \
     wget \
     curl \
     ca-certificates \
+    pkg-config \
+    libsodium-dev \
+    libssl-dev \
+    zlib1g-dev \
+    make \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy source files
@@ -61,6 +68,9 @@ COPY --from=builder /app /app
 # Build Zig FFI
 RUN cd ffi/zig && \
     zig build-lib -dynamic telegram.zig && \
+    zig build-lib -dynamic discord.zig && \
+    zig build-lib -dynamic twitter.zig && \
+    zig build-lib -dynamic crypto/crypto.zig && \
     cd ../..
 
 # =============================================================================
@@ -88,6 +98,9 @@ RUN mkdir -p bin config sessions logs tmp
 # Copy built binaries from builder
 COPY --from=builder /app/bin/trigger bin/trigger
 COPY --from=builder /app/ffi/zig/libtelegram.so lib/
+COPY --from=builder /app/ffi/zig/libdiscord.so lib/
+COPY --from=builder /app/ffi/zig/libtwitter.so lib/
+COPY --from=builder /app/ffi/zig/libcrypto.so lib/
 
 # Set permissions
 RUN chmod +x bin/trigger && \
