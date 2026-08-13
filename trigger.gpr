@@ -63,6 +63,7 @@ project Trigger is
       --  Platform packages
       "trigger/core/platform/platform_types.ads",
       "trigger/core/platform/platform_interface.ads",
+      "trigger/core/platform/platform_factory.ads",
       "trigger/core/platform/platform_factory.adb",
       
       --  Platform implementations
@@ -81,7 +82,10 @@ project Trigger is
       
       --  TUI packages
       "trigger/tui/main_menu.adb",
-      "trigger/tui/main_menu.ads"
+      "trigger/tui/main_menu.ads",
+      
+      --  FFI bindings
+      "trigger/ffi/discord.ads"
    );
 
    --  Library dependencies

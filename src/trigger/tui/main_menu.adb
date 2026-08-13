@@ -50,6 +50,7 @@ package body Trigger.TUI.Main_Menu is
       Config : Trigger.CLI.Argument_Parser.Configuration_Type
    ) is
       Core_Platform : Platform_Types.Platform_Type;
+      Session_Dir : String (1..256) := (others => ' ');
    begin
       --  Clean up existing platform
       if Current_Platform /= null then
@@ -59,10 +60,27 @@ package body Trigger.TUI.Main_Menu is
 
       Core_Platform := CLI_Platform_To_Core_Platform (Config.Platform);
       
+      --  Get session directory from config or use default
+      if Ada.Strings.Unbounded.Length (Config.Session_Dir) > 0 then
+         declare
+            Sess_Dir : constant String := Ada.Strings.Unbounded.To_String (Config.Session_Dir);
+         begin
+            Session_Dir (1..Sess_Dir'Length) := Sess_Dir;
+         end;
+      end if;
+      
       --  Create the platform instance
       case Core_Platform is
          when Platform_Types.Telegram =>
-            Current_Platform := new Telegram_Platform.Platform_Implementation;
+            Current_Platform := new Telegram_Platform.Platform_Implementation'(
+               Telegram_Platform.Platform_Implementation'(
+                  Telegram_Platform.Init (
+                     Config.API_ID,
+                     Ada.Strings.Unbounded.To_String (Config.API_Hash),
+                     Session_Dir
+                  )
+               )
+            );
          when Platform_Types.Discord =>
             Current_Platform := new Discord_Platform.Platform_Implementation;
          when Platform_Types.Twitter =>
@@ -727,7 +745,61 @@ package body Trigger.TUI.Main_Menu is
                Ada.Text_IO.Put_Line ("Count: " & Integer'Image (Config.Report_Count));
                Ada.Text_IO.Put_Line ("Reason: " & 
                   Trigger.CLI.Argument_Parser.Report_Reason'Image (Config.Report_Reason));
-               Ada.Text_IO.Put_Line ("[Actual reporting would be implemented here]");
+               Ada.Text_IO.New_Line;
+               
+               --  Convert CLI Report_Reason to Platform_Types.Report_Reason
+               declare
+                  Core_Reason : Platform_Types.Report_Reason;
+                  Messages : Platform_Interface.Message_Array;
+                  Results : Platform_Interface.Report_Array;
+                  Success_Count : Integer := 0;
+                  Channel_Name : constant String := To_String (Current_Channel);
+               begin
+                  --  Map CLI reason to core reason
+                  case Config.Report_Reason is
+                     when Trigger.CLI.Argument_Parser.Reason_Spam =>
+                        Core_Reason := Platform_Types.Spam;
+                     when Trigger.CLI.Argument_Parser.Reason_Violence =>
+                        Core_Reason := Platform_Types.Violence;
+                     when Trigger.CLI.Argument_Parser.Reason_Pornography =>
+                        Core_Reason := Platform_Types.Sexual_Content;
+                     when Trigger.CLI.Argument_Parser.Reason_Copyright =>
+                        Core_Reason := Platform_Types.Copyright_Infringement;
+                     when Trigger.CLI.Argument_Parser.Reason_Privacy =>
+                        Core_Reason := Platform_Types.Custom_Reason;  -- No Privacy in Platform_Types
+                     when Trigger.CLI.Argument_Parser.Reason_Scam =>
+                        Core_Reason := Platform_Types.Scam;
+                     when Trigger.CLI.Argument_Parser.Reason_Other =>
+                        Core_Reason := Platform_Types.Custom_Reason;
+                  end case;
+                  
+                  --  Get messages from the channel
+                  Ada.Text_IO.Put_Line ("Fetching messages...");
+                  Messages := Current_Platform.Get_Messages (
+                     Current_Session, Channel_Name, Config.Report_Count);
+                  
+                  --  Report each message
+                  Ada.Text_IO.Put_Line ("Reporting messages...");
+                  Results := Current_Platform.Report_Messages (
+                     Current_Session, Messages, Core_Reason, "Reported via Trigger TUI");
+                  
+                  --  Display results
+                  for I in 1..Config.Report_Count loop
+                     if Results (I).Success then
+                        Success_Count := Success_Count + 1;
+                        Ada.Text_IO.Put_Line ("  [" & Integer'Image (I) & "] " & 
+                           "SUCCESS - " & Results (I).Message);
+                     else
+                        Ada.Text_IO.Put_Line ("  [" & Integer'Image (I) & "] " & 
+                           "FAILED - " & Results (I).Message);
+                     end if;
+                  end loop;
+                  
+                  Ada.Text_IO.New_Line;
+                  Ada.Text_IO.Put_Line ("Reporting complete: " & 
+                     Integer'Image (Success_Count) & "/" & 
+                     Integer'Image (Config.Report_Count) & " successful");
+               end;
             end if;
             
          when '0' =>

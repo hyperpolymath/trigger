@@ -364,6 +364,52 @@ pub export fn discord_client_get_messages(
 }
 
 // =============================================================================
+// ADDITIONAL C-EXPORTED FUNCTIONS
+// =============================================================================
+
+pub export fn discord_client_ping(
+    client_ptr: [*c]*anyopaque
+) callconv(.C) i32 {
+    // SAFETY: client_ptr must be valid and point to a DiscordClient
+    const client = @ptrCast(*DiscordClient, @alignCast(@alignOf(DiscordClient), client_ptr));
+    _ = client;
+    // TODO: Implement actual ping
+    return 1;  // 1 = success, 0 = failure
+}
+
+pub export fn discord_client_report_message(
+    client_ptr: [*c]*anyopaque,
+    channel_id: u64,
+    message_id: u64,
+    reason: u8
+) callconv(.C) void {
+    // SAFETY: client_ptr must be valid and point to a DiscordClient
+    const client = @ptrCast(*DiscordClient, @alignCast(@alignOf(DiscordClient), client_ptr));
+    _ = client;
+    _ = channel_id;
+    _ = message_id;
+    _ = reason;
+    // TODO: Implement actual reporting
+    // For Discord, reporting is typically done via adding a reaction
+}
+
+pub export fn discord_client_get_guild(
+    client_ptr: [*c]*anyopaque,
+    guild_id: u64
+) callconv(.C) ?*anyopaque {
+    // SAFETY: client_ptr must be valid and point to a DiscordClient
+    const client = @ptrCast(*DiscordClient, @alignCast(@alignOf(DiscordClient), client_ptr));
+    const guild = client.getGuild(guild_id) catch |err| {
+        std.debug.print("Error getting guild: {}", .{err});
+        return null;
+    };
+    // SAFETY: Allocating guild on heap for return to caller
+    const guild_ptr = try std.heap.page_allocator.create(DiscordGuild);
+    guild_ptr.* = guild;
+    return @ptrCast([*]anyopaque, guild_ptr);
+}
+
+// =============================================================================
 // NOTE
 // =============================================================================
 //
