@@ -98,12 +98,21 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
 * Implement fault-tolerance mechanisms
 * Build ADI TUI for primary interface (after CLI is complete)
 
-=== D. Test Blitz (MEDIUM PRIORITY)
-* Run pons on the repo
-* Run panic attack
-* Address all issues from panic-attack report
-* Implement complete test coverage from proven-tests-and-benches repo
-* Ensure all tests and benches meet test-and-benches standards
+=== D. Test Blitz (IN PROGRESS 2026-08-13)
+* Run pons on the repo - BLOCKED: pons is still in planning phase (not yet implemented)
+* Run panic attack - COMPLETED: Ran panic-attack assail on 2026-08-13
+  - Report saved to panic-attack-report-2026-08-13.json
+  - Found 7 weak points across 5 files
+* Address all issues from panic-attack report - IN PROGRESS
+  - See panic-attack-report-2026-08-13.json for details
+  - Issues found:
+    - scripts/trigger-launcher.sh: 2 CommandInjection (eval usage), 23 unquoted variable expansions
+    - ffi/zig/twitter/twitter.zig: 8 UnsafeCode (pointer casts), 12 UncheckedError (TODO markers)
+    - ffi/zig/discord/discord.zig: 11 UnsafeCode (pointer casts)
+    - ffi/zig/telegram/telegram.zig: 6 UnsafeCode (pointer casts)
+    - ffi/zig/crypto/crypto.zig: 2 UnsafeFFI (C interop)
+* Implement complete test coverage from proven-tests-and-benches repo - PENDING
+* Ensure all tests and benches meet test-and-benches standards - PENDING
 
 === E. Security Enhancements (MEDIUM PRIORITY)
 * Complete www/.well-known/ setup with all Resource Records
@@ -141,6 +150,7 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
 * `scripts/git-hooks/` - Comprehensive Git hooks
 * `docs/ARCHITECTURE.adoc` - Updated with containerisation section
 * `dev-notes/HANDOVER.adoc` - This handover note (NEW)
+* `panic-attack-report-2026-08-13.json` - Security scan report (NEW)
 
 == Validation Results
 
