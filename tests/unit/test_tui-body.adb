@@ -4,39 +4,54 @@
 --
 --  Author: hyperpolymath
 
+with Trigger.TUI.Main_Menu;
+
 package body Test_TUI is
 
    use Test_Harness;
+   use Trigger.TUI.Main_Menu;
 
    --  Test procedures
    procedure Test_Main_Menu_Display is
    begin
-      Assert_True (True, "Main menu display test placeholder");
+      --  Test that main menu can be displayed without errors
+      Display_Main_Menu;
+      Assert_True (True, "Main menu displayed successfully");
    end Test_Main_Menu_Display;
 
    procedure Test_Platform_Selection is
    begin
-      Assert_True (True, "Platform selection test placeholder");
+      --  Test that platform menu can be displayed
+      Display_Platform_Menu;
+      Assert_True (True, "Platform selection menu displayed successfully");
    end Test_Platform_Selection;
 
    procedure Test_Account_Management is
    begin
-      Assert_True (True, "Account management test placeholder");
+      --  Test that account menu can be displayed
+      Display_Account_Menu;
+      Assert_True (True, "Account management menu displayed successfully");
    end Test_Account_Management;
 
    procedure Test_Session_Management is
    begin
-      Assert_True (True, "Session management test placeholder");
+      --  Test that session menu can be displayed
+      Display_Session_Menu;
+      Assert_True (True, "Session management menu displayed successfully");
    end Test_Session_Management;
 
    procedure Test_Reporting_Flow is
    begin
-      Assert_True (True, "Reporting flow test placeholder");
+      --  Test that reporting menu can be displayed
+      Display_Reporting_Menu;
+      Assert_True (True, "Reporting flow menu displayed successfully");
    end Test_Reporting_Flow;
 
    procedure Test_Diagnostics_Menu is
    begin
-      Assert_True (True, "Diagnostics menu test placeholder");
+      --  Test that diagnostics menu can be displayed
+      Display_Diagnostics_Menu;
+      Assert_True (True, "Diagnostics menu displayed successfully");
    end Test_Diagnostics_Menu;
 
    --  Register all tests
