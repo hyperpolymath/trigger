@@ -58,10 +58,9 @@ pub const CryptoError = error{
 // =============================================================================
 
 // libsodium C bindings
-// panic-attack: accepted - ffi_kind:zig_c_libsodium - C interop required for libsodium integration
 const c = @cImport({
     @cInclude("sodium.h");
-});
+}); // panic-attack: accepted - ffi_kind:zig_c_libsodium - C interop required for libsodium integration
 
 var sodium_initialized: bool = false;
 
@@ -229,10 +228,9 @@ pub export fn crypto_constant_time_compare(
 // =============================================================================
 
 // liboqs C bindings (optional - may not be installed)
-// panic-attack: accepted - ffi_kind:zig_c_liboqs - C interop required for liboqs Kyber-1024 integration
 const oqs = @cImport({
     @cInclude("oqs/oqs.h");
-});
+}); // panic-attack: accepted - ffi_kind:zig_c_liboqs - C interop required for liboqs Kyber-1024 integration
 
 var oqs_initialized: bool = false;
 var oqs_kyber_enabled: bool = false;
