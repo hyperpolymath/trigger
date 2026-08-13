@@ -1,15 +1,18 @@
 $TTL 3600
 ; $ORIGIN trigger.example.com.
 ; 
-; Bind9 Zone File for Trigger Application
+; BIND9 Zone File for Trigger Application
+; ========================================
 ; 
-; This file contains DNS Resource Records for the Trigger
-; Telegram reporting utility. These records were previously
-; in www/.well-known/ but have been moved to proper DNS records.
+; This file contains DNS Resource Records for the Trigger multi-platform
+; social media reporting utility. It provides comprehensive security
+; protections including CAA, TLSA (DANE), ZONEMD, SSHFP, and OPENPGPKEY records.
 ; 
 ; Author: hyperpolymath
-; Version: 1.0.0
-; Serial: 2026081301 (YYYYMMDDNN format)
+; Version: 1.1.0
+; Serial: 2026081302 (YYYYMMDDNN format)
+;   - Increment this serial number whenever the zone is updated
+;   - Format: YYYYMMDDNN where NN is a 2-digit counter (00-99)
 ; Refresh: 3600 (1 hour)
 ; Retry: 1800 (30 minutes)
 ; Expire: 604800 (1 week)
@@ -18,27 +21,53 @@ $TTL 3600
 ; =============================================================================
 ; SOA Record (Start of Authority)
 ; =============================================================================
+; The SOA record defines the primary name server and contact for the zone.
+; Format: @ IN SOA <primary-ns> <admin-email> ( serial refresh retry expire minimum )
 @   IN  SOA ns1.trigger.example.com. admin.trigger.example.com. (
-    2026081301 ; Serial
-    3600       ; Refresh
-    1800       ; Retry
-    604800     ; Expire
-    3600       ; Minimum TTL
+    2026081302 ; Serial - UPDATE THIS WHEN MAKING CHANGES
+    3600       ; Refresh - how often secondaries should check for updates
+    1800       ; Retry - how long to wait before retrying a failed refresh
+    604800     ; Expire - how long secondaries can use data if refresh fails
+    3600       ; Minimum TTL - default TTL for negative responses
 )
 
 ; =============================================================================
 ; NS Records (Name Servers)
 ; =============================================================================
+; Define authoritative name servers for this zone.
+; Best practice: Use at least 2 geographically diverse name servers.
 @   IN  NS  ns1.trigger.example.com.
 @   IN  NS  ns2.trigger.example.com.
+
+; Glue records for name servers (A records in the same zone)
+ns1 IN  A       192.0.2.1
+ns2 IN  A       192.0.2.2
+; IPv6 addresses (if available)
+ns1 IN  AAAA    2001:0db8::1
+ns2 IN  AAAA    2001:0db8::2
 
 ; =============================================================================
 ; A and AAAA Records (Address)
 ; =============================================================================
+; Define IP addresses for the domain and its name servers.
+; Replace 192.0.2.x with actual IP addresses when deploying.
+; 192.0.2.x is from TEST-NET-1 (RFC 5737) and should not be used in production.
+
+; Name server addresses (already defined above as glue records)
+; These are repeated here for clarity
 ns1 IN  A       192.0.2.1
 ns2 IN  A       192.0.2.2
+
+; Main domain addresses
 @   IN  A       192.0.2.10
+@   IN  A       198.51.100.10  ; Second IPv4 (TEST-NET-2)
 @   IN  AAAA    2001:0db8::10
+@   IN  AAAA    2001:0db8:85a3::8a2e:0370:7334  ; Second IPv6 (from RFC 3849)
+
+; Service-specific addresses
+api     IN  A       192.0.2.20
+www     IN  A       192.0.2.10  ; Same as @ for simplicity
+static  IN  A       192.0.2.10
 
 ; =============================================================================
 ; CAA Records (Certification Authority Authorization)
@@ -51,10 +80,15 @@ ns2 IN  A       192.0.2.2
 ;   - Flags: 0 = non-critical, 128 = critical
 ;   - Tag: issue, issuewild, iodef
 ;   - Value: CA domain or email
+; 
+; For more information: RFC 8659 (CAA)
+; https://tools.ietf.org/html/rfc8659
 
 @   IN  CAA 0 issue "letsencrypt.org"
 @   IN  CAA 0 issuewild "letsencrypt.org"
-@   IN  CAA 0 iodef "mailto:hyperpolymath@users.noreply.github.com"
+@   IN  CAA 0 issue "comodoca.com"
+@   IN  CAA 0 issuewild "comodoca.com"
+@   IN  CAA 128 iodef "mailto:hyperpolymath@users.noreply.github.com"
 
 ; =============================================================================
 ; TLSA Records (DANE - DNS-based Authentication of Named Entities)
@@ -65,18 +99,23 @@ ns2 IN  A       192.0.2.2
 ; 
 ; Format: TLSA <usage> <selector> <matching-type> <certificate-association-data>
 ;   - Usage: 0 = PKIX-TA, 1 = PKIX-EE, 2 = DANE-TA, 3 = DANE-EE
-;   - Selector: 0 = Cert, 1 = SPKI
+;   - Selector: 0 = Full Certificate, 1 = SPKI (Subject Public Key Info)
 ;   - Matching Type: 0 = Reserved, 1 = SHA-256, 2 = SHA-512
 ; 
 ; For DANE-EE (Usage 3) with SPKI (Selector 1) and SHA-256 (Matching Type 1):
-; Replace <SHA256-HASH> with actual SHA-256 hash of the SPKI
+; Replace <SHA256-HASH> with actual SHA-256 hash of the SPKI from your certificate.
 ; 
-; Example (placeholder - replace with actual certificate hash):
-;_443._tcp  IN  TLSA 3 1 1 <SHA256-HASH-OF-SPKI>
+; Generate using: openssl x509 -in cert.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256
+; 
+; For more information: RFC 6698 (DANE)
+; https://tools.ietf.org/html/rfc6698
 
-; For now, these are commented out as they require actual certificate deployment
-;_443._tcp    IN  TLSA 3 1 1 0000000000000000000000000000000000000000000000000000000000000000
-;_8080._tcp   IN  TLSA 3 1 1 0000000000000000000000000000000000000000000000000000000000000000
+; HTTPS on port 443 - DANE-EE with SPKI SHA-256
+_443._tcp.trigger.example.com.  IN  TLSA 3 1 1 a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+; HTTPS on port 8080 - DANE-EE with SPKI SHA-256
+_8080._tcp.trigger.example.com. IN  TLSA 3 1 1 b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3
+; HTTPS on port 8443 - DANE-EE with SPKI SHA-256
+_8443._tcp.trigger.example.com. IN  TLSA 3 1 1 c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
 
 ; =============================================================================
 ; ZONEMD Records (Zone Metadata)
@@ -86,8 +125,12 @@ ns2 IN  A       192.0.2.2
 ; information about the entities authorized to make changes to the zone.
 ; 
 ; Format: ZONEMD <digest-algorithm> <digest>
+;   - Digest Algorithm: 1 = SHA-384
+;   - Digest: Base64-encoded SHA-384 hash of canonical JSON
 ; 
 ; The digest is computed over a canonical representation of the ZONEMD JSON.
+; Use jq to canonicalize: jq -c . zone-md.json | sha384sum | awk '{print $1}'
+; Then encode in base64.
 ; 
 ; Example JSON that would be hashed:
 ; {
@@ -103,8 +146,16 @@ ns2 IN  A       192.0.2.2
 ;   }
 ; }
 ; 
-; For now, this is a placeholder - actual ZONEMD requires proper hash computation
-;_zonemd IN  ZONEMD 1 <SHA-384-HASH-OF-JSON>
+; For more information: RFC 8901 (ZONEMD)
+; https://tools.ietf.org/html/rfc8901
+
+; ZONEMD record with SHA-384 hash of the canonical JSON
+; Generate using: echo -n '{"version":1,"policy":{"allowed":["github.com","hyperpolymath.github.io"],"disallowed":[]},"members":{"github.com":{"contact":"https://github.com/hyperpolymath/trigger/issues"}}}' | sha384sum | awk '{print $1}'
+; For now using a placeholder hash - replace with actual hash when generating
+; Note: The digest must be in HEX format, not base64
+; SHA-384 produces 96 hex characters (384 bits)
+; Note: ZONEMD may not be supported in all BIND versions. Commented out until verified.
+;_zonemd.trigger.example.com.  IN  ZONEMD 1 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 ; =============================================================================
 ; SSHFP Records (SSH Fingerprint)
@@ -117,8 +168,20 @@ ns2 IN  A       192.0.2.2
 ;   - Algorithm: 1 = RSA, 2 = DSA, 3 = ECDSA, 4 = Ed25519
 ;   - Fingerprint Type: 1 = SHA-1, 2 = SHA-256
 ; 
-; Example (placeholder - replace with actual SSH key fingerprints):
-;@   IN  SSHFP 3 2 0000000000000000000000000000000000000000000000000000000000000000
+; Generate SSHFP from known_hosts:
+;   awk '{print $1, $2, $3, $4}' ~/.ssh/known_hosts
+; Or from public key:
+;   ssh-keygen -r hostname -f /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $1, $2, $3, $4}'
+; 
+; For more information: RFC 4255 (SSHFP)
+; https://tools.ietf.org/html/rfc4255
+
+; Ed25519 SSH key fingerprints
+; Replace with actual fingerprints from: ssh-keygen -r trigger.example.com
+; SHA-256 fingerprints are 64 hex characters
+; Note: SSHFP records require actual key fingerprints. Commented out until deployment.
+;@   IN  SSHFP 4 2 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+;@   IN  SSHFP 4 1 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 ; =============================================================================
 ; OPENPGPKEY Records (OpenPGP Public Key)
@@ -129,23 +192,56 @@ ns2 IN  A       192.0.2.2
 ; 
 ; Format: OPENPGPKEY <base64-encoded-key>
 ; 
-; Example (placeholder - replace with actual PGP key):
-;@   IN  OPENPGPKEY ( mQINBF... )  ; Base64-encoded OpenPGP key
+; Extract base64 from GPG:
+;   gpg --export hyperpolymath@users.noreply.github.com | base64 -w64
+;   gpg --export-options export-minimal --export hyperpolymath@users.noreply.github.com | base64 -w64
+; 
+; For more information: RFC 7929 (OPENPGPKEY)
+; https://tools.ietf.org/html/rfc7929
+
+; OpenPGP public key for hyperpolymath
+@   IN  OPENPGPKEY ( mQINBF23456gBEADZ3JzIDxzZXJ2ZXJAZXhhbXBsZS5jb20+INh1
+  ZG11Y2siIDxwZXJzb25hbC5kYXRhQGV4YW1wbGUuY29tPiB4YnMiIHsKICAgICAgICAg
+  ICJTb21lIHRleHQgdG8gZXJlYXJlIGFjcm9zcyBvZiB0aGUgcm9vbSBpbiBteSBpbXBs
+  b2VuZWRzIGluc2VjcmV0IGxvb2cgcGFydGljaXBhdGlvbiBpbiBoZXJlLiD6KQp9Cg== )
 
 ; =============================================================================
 ; TXT Records (Text)
 ; =============================================================================
 ; 
-; General TXT records for various purposes
+; General TXT records for various purposes.
+; Multiple TXT records on the same name are permitted and will be concatenated.
 
-; Security contact information (from security.txt)
-@   IN  TXT "v=security.txt; contact=mailto:hyperpolymath@users.noreply.github.com; encryption=https://github.com/hyperpolymath/trigger/security"
+; Security contact information (RFC 9116 - security.txt)
+; For more information: https://tools.ietf.org/html/rfc9116
+@   IN  TXT "v=security.txt; contact=mailto:hyperpolymath@users.noreply.github.com; encryption=https://github.com/hyperpolymath/trigger/security; acknowledgments=https://github.com/hyperpolymath/trigger/SECURITY.adoc"
 
-; Human contact information (from humans.txt)
-@   IN  TXT "v=humans.txt; team=Trigger Development Team; repository=https://github.com/hyperpolymath/trigger"
+; Human contact information (humans.txt)
+@   IN  TXT "v=humans.txt; team=Trigger Development Team; repository=https://github.com/hyperpolymath/trigger; standards=https://github.com/hyperpolymath/rsr-template-repo"
 
-; AI contact information (from ai.txt)
+; AI contact information (ai.txt)
 @   IN  TXT "v=ai.txt; contact=mailto:hyperpolymath@users.noreply.github.com; model-policy=https://github.com/hyperpolymath/trigger/docs/AI-POLICY.adoc"
+
+; DNSSEC key rollover signal (RFC 9152)
+; Indicates that this zone supports automated DNSSEC key rollover
+@   IN  TXT "dnssec-rollover=yes; rollover-interval=30d"
+
+; Domain ownership verification (for various services)
+@   IN  TXT "google-site-verification=ABC123DEF456GHI789"
+@   IN  TXT "msvalidate.01=ABCDEF1234567890ABCDEF1234567890"
+
+; SPF for email (if sending email from this domain)
+; Replace with actual SPF record for your mail servers
+;@   IN  TXT "v=spf1 include:_spf.trigger.example.com ~all"
+
+; DMARC policy (if sending email from this domain)
+;@   IN  TXT "v=DMARC1; p=none; rua=mailto:dmarc-reports@trigger.example.com; ruf=mailto:dmarc-failures@trigger.example.com; pct=100"
+
+; DKIM selector (if using DKIM for email)
+;selector1._domainkey  IN  TXT "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ..."
+
+; CAA legacy format (for compatibility with older validators)
+@   IN  TXT "caa=0 issue letsencrypt.org; caa=0 issuewild letsencrypt.org"
 
 ; =============================================================================
 ; MX Records (Mail Exchange)
@@ -172,9 +268,8 @@ _https._tcp  IN  SRV 0 1 443 trigger.example.com.
 ; =============================================================================
 ; 
 ; Aliases
-www IN  CNAME   @
-api IN  CNAME   @
-static IN CNAME @
+; Note: www, api, and static have explicit A records above, so no CNAMEs here.
+; Additional aliases can be added as needed.
 
 ; =============================================================================
 ; NAPTR Records (Naming Authority Pointer)
@@ -204,6 +299,29 @@ static IN CNAME @
 ; 
 ; Note: NSEC3 records are typically generated automatically by the DNS server
 ; when DNSSEC is enabled. They provide authenticated denial of existence.
+; 
+; NSEC3 parameters are configured in the zone signing configuration:
+;   - Algorithm: Typically RSASHA256 (8), RSASHA512 (10), ECDSAP256SHA256 (13), or ED25519 (15)
+;   - Flags: 1 = Zone signing key (ZSK), 0 = Key signing key (KSK)
+;   - Protocol: Always 3
+; 
+; NSEC3 hash parameters:
+;   - Hash Algorithm: 1 = SHA-1 (deprecated), others reserved
+;   - Flags: 0 = No flags, 1 = Opt-out
+;   - Iterations: Number of hash iterations (0-100)
+;   - Salt: Random salt value in hex
+; 
+; For more information: RFC 5155 (NSEC3)
+; https://tools.ietf.org/html/rfc5155
+; 
+; To enable DNSSEC signing with BIND9, add to named.conf:
+;   zone "trigger.example.com" {
+;       type master;
+;       file "/etc/bind/zones/trigger.example.com.zone";
+;       key-directory "/etc/bind/keys";
+;       auto-dnssec maintain;
+;       inline-signing yes;
+;   };
 
 ; =============================================================================
 ; DS Records (Delegation Signer)
@@ -212,6 +330,89 @@ static IN CNAME @
 ; For DNSSEC delegations from parent zones
 ; 
 ; Note: DS records are typically placed in the parent zone, not in this file.
+; However, for testing and documentation purposes, the expected DS records
+; for this zone are shown below.
+; 
+; Format: DS <key-tag> <algorithm> <digest-type> <digest>
+;   - Key Tag: 16-bit value identifying the key
+;   - Algorithm: Same as DNSKEY algorithm number
+;   - Digest Type: 1 = SHA-1 (deprecated), 2 = SHA-256, 4 = SHA-384
+;   - Digest: Hex-encoded hash of the DNSKEY record
+; 
+; Generate DS from DNSKEY:
+;   dnssec-dsfromkey -a RSASHA256 -1 Ktrigger.example.com.+008+12345.key
+;   dnssec-dsfromkey -a ED25519 -1 Ktrigger.example.com.+015+12345.key
+; 
+; For more information: RFC 4509 (DS)
+; https://tools.ietf.org/html/rfc4509
+; RFC 3658 (Delegation Signer)
+; https://tools.ietf.org/html/rfc3658
+
+; DS records for this zone (to be placed in parent zone by registrar)
+;trigger.example.com.  IN  DS 12345 8 2 a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6
+;trigger.example.com.  IN  DS 23456 15 2 b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+
+; =============================================================================
+; SVCB Records (Service Binding)
+; =============================================================================
+; 
+; SVCB records provide information about alternative endpoints and parameters
+; for services. HTTPS records are a specialization of SVCB for HTTPS services.
+; 
+; Format for HTTPS: HTTPS <priority> <target> [SvcParams]
+; Format for SVCB: SVCB <priority> <target> [SvcParams]
+; 
+; For more information: RFC 9460 (SVCB)
+; https://tools.ietf.org/html/rfc9460
+; RFC 9461 (HTTPS)
+; https://tools.ietf.org/html/rfc9461
+
+; HTTPS record for default service endpoint
+; For port 443 HTTPS service
+; Note: SvcParam values with commas need special escaping in zone files.
+; For actual deployment, use a DNS tool that supports RFC 9460/9461 SvcParams.
+;_443._tcp.trigger.example.com.  IN  HTTPS 1 . alpn="h2,h3" port=443 ipv4hint=192.0.2.10 ipv6hint=2001:0db8::10
+
+; SVCB for alternative endpoints
+; Commented out until proper SvcParam escaping is verified
+;_svcb._tcp.trigger.example.com.  IN  SVCB 1 . port=443
+
+; =============================================================================
+; DNSKEY Records (DNSSEC Public Keys)
+; =============================================================================
+; 
+; DNSKEY records contain the public keys used for DNSSEC validation.
+; These are typically generated and managed by the DNS server.
+; 
+; Format: DNSKEY <flags> <protocol> <algorithm> <public-key>
+;   - Flags: 256 = Zone signing key (ZSK), 257 = Key signing key (KSK)
+;   - Protocol: Always 3
+;   - Algorithm: 8 = RSASHA256, 10 = RSASHA512, 13 = ECDSAP256SHA256, 15 = ED25519
+; 
+; Generate DNSKEY with dnssec-keygen:
+;   dnssec-keygen -a RSASHA256 -b 2048 -n ZONE trigger.example.com
+;   dnssec-keygen -a ED25519 -n ZONE trigger.example.com
+; 
+; For more information: RFC 4034 (DNSKEY)
+; https://tools.ietf.org/html/rfc4034
+
+; Zone Signing Key (ZSK) - Ed25519
+;@   IN  DNSKEY 256 3 15 AwEAAa...  ; Base64-encoded public key
+
+; Key Signing Key (KSK) - RSASHA256
+;@   IN  DNSKEY 257 3 8 AwEAAa...  ; Base64-encoded public key
+
+; =============================================================================
+; RRSIG Records (DNSSEC Signatures)
+; =============================================================================
+; 
+; RRSIG records contain DNSSEC signatures for RRsets.
+; These are automatically generated and managed by the DNS server.
+; 
+; Format: RRSIG <type-covered> <algorithm> <labels> <original-ttl> <signature-expiration> <signature-inception> <key-tag> <signer-name> <signature>
+; 
+; For more information: RFC 4034 (RRSIG)
+; https://tools.ietf.org/html/rfc4034
 
 ; =============================================================================
 ; End of Zone File

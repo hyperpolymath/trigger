@@ -1,23 +1,28 @@
-# TLSA (DANE) Record Placeholder
-# 
-# This file would contain TLSA records for DANE (DNS-based Authentication of 
-# Named Entities) to enable TLS certificate verification via DNS.
-# 
+# TLSA (DANE) Record
+# ====================
+# TLSA records for DANE (DNS-based Authentication of Named Entities) enable
+# TLS certificate verification via DNS, providing security beyond PKI.
+#
 # Format: <usage> <selector> <matching-type> <certificate-association-data>
+#   - Usage: 0 = PKIX-TA, 1 = PKIX-EE, 2 = DANE-TA, 3 = DANE-EE
+#   - Selector: 0 = Full Certificate, 1 = SPKI (Subject Public Key Info)
+#   - Matching Type: 0 = Reserved, 1 = SHA-256, 2 = SHA-512
+#   - Certificate Association Data: Hex-encoded hash
 #
-# Example:
-# 3 1 1 <SHA-256 hash of SPKI from certificate>
-# 2 1 1 <SHA-256 hash of full certificate>
-#
-# For this repository (static hosting on GitHub Pages):
-# GitHub uses their own certificates, so DANE would not be applicable.
-#
-# For a live Trigger service, this would contain:
-# Usage 3 (DANE-EE) - End Entity certificate
+# For Trigger service (when deployed with HTTPS):
+# Usage 3 (DANE-EE) - End Entity certificate only
 # Selector 1 (SPKI) - Subject Public Key Info
-# Matching Type 1 (SHA-256) - SHA-256 hash
+# Matching Type 1 (SHA-256) - SHA-256 hash of SPKI
 #
-# NOTE: TLSA records are NOW DEFINED in security/bind9/trigger.zone
-# This file is kept for compatibility. The authoritative TLSA records 
-# should be in DNS, not in .well-known/. See security/bind9/trigger.zone
-# for the actual DNS records.
+# NOTE: Authoritative TLSA records are defined in security/bind9/trigger.zone
+# This file is provided for web servers that serve .well-known/ for compatibility.
+#
+# For more information: RFC 6698 (DANE)
+# https://tools.ietf.org/html/rfc6698
+#
+# Placeholder - generate actual hashes when certificates are deployed:
+# Example for port 443:
+#_443._tcp  3 1 1 <SHA-256 hash of SPKI in hex>
+#
+# Example for port 8080:
+#_8080._tcp  3 1 1 <SHA-256 hash of SPKI in hex>

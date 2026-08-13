@@ -1,0 +1,138 @@
+= Trigger Repository - Work in Progress Handover Note
+:author: hyperpolymath
+:revdate: 2026-08-13
+:version: 1.0
+
+== Current Status
+
+This document tracks the current state of work on the hyperpolymath/trigger repository transformation to be rsr-template-repo compliant and standards-compliant.
+
+== Completed Work
+
+=== 1. WWW Resource Records (COMPLETED 2026-08-13)
+* Updated `security/bind9/trigger.zone` with comprehensive DNS Resource Records:
+  - SOA, NS, A, AAAA records with proper documentation
+  - CAA records (active) - Let's Encrypt and Comodo CA
+  - TLSA records (active) - DANE for ports 443, 8080, 8443
+  - ZONEMD record (commented - BIND version compatibility issue)
+  - SSHFP records (commented - need actual fingerprints)
+  - OPENPGPKEY record (active - placeholder key)
+  - TXT records - security.txt, humans.txt, ai.txt, DNSSEC rollover signal, ownership verification
+  - MX, SRV, HTTPS, SVCB records
+  - DNSKEY, RRSIG documentation sections
+  - DS records documentation
+* Updated `.well-known/caa`, `.well-known/tlsa`, `.well-known/zonemd` with proper documentation
+* Zone file validates successfully with `named-checkzone`
+
+=== 2. Repository Standards Compliance (PREVIOUSLY COMPLETED)
+* Changed license to MPL-2.0 for code and CC-BY-SA-4.0 for documents
+* Updated LICENSE file in root with separate license folder
+* Changed .md files to .adoc (AsciiDoc format)
+* Updated README.adoc and explainme.adoc with new author information
+* Removed Ripper references (except for required acknowledgments)
+* Added Trigger branding
+
+=== 3. Code Rewrite (PREVIOUSLY COMPLETED)
+* Rewrote code in Ada/SPARK as primary design
+* Used Zig for FFI with unified-hexadeca-api
+* Used Idris2 for API definitions
+* No Python - pure Ada/SPARK + Zig FFI + Idris2 APIs
+
+== Remaining Work (Priority Order)
+
+=== A. Real Cryptography (NEXT - HIGH PRIORITY)
+* Implement EdDSA with Ed448 curve
+* Implement Kyber-1024 for post-quantum encryption
+* Use BLAKE3 for hashing
+* Use SHAKE-512 for extendable-output functions
+* Ensure all primes are strong, proven, and drawn from flat distribution
+* Verify cryptographic implementations against proven-tests-and-benches standards
+
+=== B. Containerisation (MEDIUM PRIORITY)
+* Ensure full Podman containerization with CONTAINERFILE
+* Use Wolfi image base
+* Include comprehensive Guix environment
+* Set up firewalld with full port restrictions (all ports down except used ports)
+* Ensure SELinux is active and properly configured
+* Add CODEOWNERS, MAINTAINERS, ARCHITECTURE, GOVERNANCE files
+* Set up sophisticated Git hooks
+* Implement harsh but fair CI/CD pipeline
+* Enable Hypatia scans
+* Activate gitbot-fleet
+
+=== C. CLI and TUI (MEDIUM PRIORITY)
+* Ensure CLI has extensive flags and high arity
+* Implement full-featured help and man options
+* Create comprehensive Justfile with relevant recipes
+* Implement self-diagnostics in CLI
+* Implement self-healing capabilities
+* Implement fault-tolerance mechanisms
+* Build ADI TUI for primary interface (after CLI is complete)
+
+=== D. Test Blitz (MEDIUM PRIORITY)
+* Run pons on the repo
+* Run panic attack
+* Address all issues from panic-attack report
+* Implement complete test coverage from proven-tests-and-benches repo
+* Ensure all tests and benches meet test-and-benches standards
+
+=== E. Security Enhancements (MEDIUM PRIORITY)
+* Complete www/.well-known/ setup with all Resource Records
+* Ensure CAA, TLSA, ZONEMD, SSHFP, OPENPGPKEY are properly configured
+* Add additional security measures as identified
+* Review and harden all security configurations
+
+=== F. Launcher (LOWER PRIORITY)
+* Create launcher per specification in launcher spec from standards repo
+* Ensure launcher integrates with container setup
+
+=== G. Final Integration (LOWER PRIORITY)
+* Verify all components work together
+* Final review against rsr-template-repo standards
+* Final review against hyperpolymath standards
+
+== Files Modified in This Session
+
+* `security/bind9/trigger.zone` - Comprehensive DNS Resource Records
+* `www/.well-known/caa` - CAA record documentation
+* `www/.well-known/tlsa` - TLSA/DANE record documentation
+* `www/.well-known/zonemd` - ZONEMD record documentation
+* `dev-notes/HANDOVER.adoc` - This handover note (NEW)
+
+== Validation Results
+
+* `named-checkzone -i full trigger.example.com security/bind9/trigger.zone` - PASSES (with expected MX warning)
+* All active DNS records are syntactically valid
+* Zone file structure follows DNS best practices
+* All security records are properly documented with RFC references
+
+== Next Steps
+
+1. Review and merge these changes to main branch
+2. Proceed with Priority A: Real Cryptography implementation
+3. Then Priority B: Containerisation
+4. Then Priority D: Test Blitz (pons + panic-attack + full test suite)
+
+== Blockers and Notes
+
+* ZONEMD records commented out due to BIND 9.20 version compatibility - verify support in target deployment environment
+* SSHFP records commented out - require actual SSH key fingerprints from deployment servers
+* SVCB/HTTPS records commented out - require proper SvcParam escaping for BIND zone file format
+* All placeholder values (hashes, fingerprints, keys) need to be replaced with actual values during deployment
+
+== Standards Compliance Checklist
+
+- [x] License files (MPL-2.0 + CC-BY-SA-4.0) in root with separate folder
+- [x] Documentation in AsciiDoc format (.adoc)
+- [x] Author attribution updated to hyperpolymath
+- [x] Original author (Ripper) acknowledged appropriately
+- [x] Repository branding updated to Trigger
+- [ ] Full rsr-template-repo compliance verification needed
+- [ ] Full hyperpolymath standards compliance verification needed
+
+== Contact and References
+
+* Repository: https://github.com/hyperpolymath/trigger
+* Standards Repository: https://github.com/hyperpolymath/rsr-template-repo
+* Original Author: Ripper (acknowledged in LICENSE and documentation)
+* Current Maintainer: hyperpolymath

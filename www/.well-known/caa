@@ -2,6 +2,18 @@
 0 issuewild "letsencrypt.org"
 0 iodef "mailto:hyperpolymath@users.noreply.github.com"
 
-# NOTE: CAA records are now defined in security/bind9/trigger.zone
-# This file is kept for compatibility with web servers that serve .well-known/
-# The authoritative CAA records should be in DNS, not in .well-known/
+# CAA (Certificate Authority Authorization) Records
+# ============================================
+# These records specify which Certificate Authorities are allowed to issue
+# certificates for this domain.
+#
+# Format: <flags> <tag> <value>
+#   - flags: 0 = non-critical, 128 = critical
+#   - tag: issue, issuewild, iodef
+#   - value: CA domain or contact email
+#
+# Authoritative DNS records are defined in security/bind9/trigger.zone
+# This file is provided for web servers that serve .well-known/ for compatibility.
+#
+# For more information: RFC 8659 (CAA)
+# https://tools.ietf.org/html/rfc8659

@@ -11,7 +11,26 @@
   }
 }
 
-# NOTE: ZONEMD records are NOW DEFINED in security/bind9/trigger.zone
-# This file is kept for compatibility. The authoritative ZONEMD record 
-# should be in DNS, not in .well-known/. See security/bind9/trigger.zone
-# for the actual DNS records.
+# ZONEMD (Zone Metadata) Record
+# ==============================
+# ZONEMD provides metadata about the DNS zone itself, including information
+# about entities authorized to make changes to the zone.
+#
+# Format: The file is JSON with:
+#   - version: ZONEMD version (currently 1)
+#   - policy: Authorization policy
+#     - allowed: List of domains/hosts allowed to make changes
+#     - disallowed: List of domains/hosts NOT allowed to make changes
+#   - members: Contact information for allowed entities
+#
+# The ZONEMD record in DNS is created by hashing this JSON using SHA-384.
+#
+# NOTE: Authoritative ZONEMD record is defined in security/bind9/trigger.zone
+# This file is provided for web servers that serve .well-known/ for compatibility.
+#
+# For more information: RFC 8901 (ZONEMD)
+# https://tools.ietf.org/html/rfc8901
+#
+# To generate the DNS record:
+#   sha384sum <(echo -n '{"version":1,"policy":{"allowed":["github.com"],"disallowed":[]},"members":{"github.com":{"contact":"https://github.com/hyperpolymath/trigger/issues"}}}')
+#   _zonemd IN ZONEMD 1 <SHA-384 hash in base64>
