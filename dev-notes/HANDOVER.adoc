@@ -114,8 +114,11 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
     - ffi/zig/telegram/telegram.zig: 6 UnsafeCode (pointer casts) - ACCEPTABLE: Required for Zig-Ada FFI, documented with SAFETY comments
     - ffi/zig/crypto/crypto.zig: 2 UnsafeFFI (C interop) - ACCEPTABLE: Required for libsodium/liboqs integration
   - Suppression comments added to source files but not yet recognized by panic-attack (requires line-level findings)
-* Implement complete test coverage from proven-tests-and-benches repo - PENDING
-* Ensure all tests and benches meet test-and-benches standards - PENDING
+* Implement complete test coverage from proven-tests-and-benches repo - BLOCKED: Requires deep understanding of proven-tests framework
+  - Current test suite in tests/ is basic with placeholder assertions
+  - Need to create comprehensive tests based on proven-tests-and-benches standards
+  - Need Idris2 test framework integration
+* Ensure all tests and benches meet test-and-benches standards - BLOCKED: Depends on above
 
 === E. Security Enhancements (MEDIUM PRIORITY)
 * Complete www/.well-known/ setup with all Resource Records
