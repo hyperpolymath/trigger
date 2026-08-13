@@ -1,9 +1,10 @@
---  Trigger - Telegram Reporting Tool
+--  Trigger - Multi-Platform Social Media Reporting Tool
 --  Ada/SPARK Project File
 --  
---  This project implements a Telegram channel reporting utility
---  with multi-account management, persistent sessions, and
---  automatic FloodWait handling.
+--  This project implements a multi-platform social media reporting utility
+--  with support for Telegram, Discord, and Twitter/X.
+--  Features: multi-account management, persistent sessions, rate limit handling,
+--  platform abstraction via Idris2 ABI and Zig FFI (unified-hexadeca-api).
 --  
 --  Original concept by 2nixx (T.me/NetworkCriminals)
 --  Rewritten in Ada/SPARK for safety and verification
@@ -58,6 +59,19 @@ project Trigger is
       "trigger/core/application.ads",
       "trigger/core/cryptography.adb",
       "trigger/core/cryptography.ads",
+      
+      --  Platform packages
+      "trigger/core/platform/platform_types.ads",
+      "trigger/core/platform/platform_interface.ads",
+      "trigger/core/platform/platform_factory.adb",
+      
+      --  Platform implementations
+      "trigger/platforms/telegram/telegram-platform.ads",
+      "trigger/platforms/telegram/telegram-platform.adb",
+      "trigger/platforms/discord/discord-platform.ads",
+      "trigger/platforms/discord/discord-platform.adb",
+      "trigger/platforms/twitter/twitter-platform.ads",
+      "trigger/platforms/twitter/twitter-platform.adb",
       
       --  Diagnostics packages
       "trigger/diagnostics/system_check.adb",
