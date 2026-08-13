@@ -89,14 +89,31 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
 * Security: Non-root user, SELinux enforcing, firewalld drop zone
 * CODEOWNERS, MAINTAINERS, ARCHITECTURE, GOVERNANCE files already existed
 
-=== C. CLI and TUI (MEDIUM PRIORITY)
-* Ensure CLI has extensive flags and high arity
-* Implement full-featured help and man options
-* Create comprehensive Justfile with relevant recipes
-* Implement self-diagnostics in CLI
-* Implement self-healing capabilities
-* Implement fault-tolerance mechanisms
-* Build ADI TUI for primary interface (after CLI is complete)
+=== C. CLI and TUI (COMPLETED 2026-08-13)
+* Ensure CLI has extensive flags and high arity - COMPLETED
+  - 40+ command-line flags implemented in argument_parser.adb
+  - High arity: Many flags accept arguments (strings, integers, floats, enums)
+* Implement full-featured help and man options - COMPLETED
+  - help_generator.adb: Comprehensive help text with all flags grouped by category
+  - man_page.adb: Full man page in troff-style format
+  - trigger-man.adoc: AsciiDoc man page
+* Create comprehensive Justfile with relevant recipes - COMPLETED
+  - 581-line Justfile with 30+ recipes
+  - Categories: build, test, diagnostics, sessions, reporting, docs, development, system
+* Implement self-diagnostics in CLI - COMPLETED
+  - system_check.adb: Check_GNAT_Available, Check_Zig_Available, Check_Idris2_Available
+  - Check_Config_File, Check_Session_Directory, Check_Disk_Space
+  - Run_Diagnostics, Check_Dependencies, Check_Configuration, Check_Sessions, Run_Health_Check
+* Implement self-healing capabilities - COMPLETED
+  - self_healing.adb: Create_Missing_Config, Create_Missing_Session_Dir
+  - Validate_Config_Values, Fix_Configuration, Fix_Sessions, Fix_Permissions
+* Implement fault-tolerance mechanisms - COMPLETED
+  - Exception handling throughout all Ada packages
+  - Graceful degradation in FFI layers
+* Build ADI TUI for primary interface - COMPLETED
+  - main_menu.adb: Comprehensive ADI (Advanced Dialog Interface)
+  - Multiple menu hierarchies: main, platform, operations, account, session, reporting, diagnostics
+  - Full menu system with Handle_* procedures for each menu level
 
 === D. Test Blitz (IN PROGRESS 2026-08-13)
 * Run pons on the repo - BLOCKED: pons is still in planning phase (not yet implemented)
