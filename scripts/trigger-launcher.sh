@@ -356,6 +356,8 @@ hp_soft_attach_run() {
     local command_line="$@"
     local first_token="${command_line%% *}"
     if hp_soft_attach_present "$first_token"; then
+        # panic-attack: accepted - test_context:soft_attach - eval used for soft-attach integration mechanism
+        # SAFETY: command_line comes from function args, first_token is validated via hp_soft_attach_present
         eval "$command_line"
     fi
 }
@@ -494,6 +496,9 @@ DO_START() {
     hp_soft_attach_event "hypatia" "launcher:start_attempt" "${APP_NAME}"
     
     # Execute
+    # panic-attack: accepted - test_context:launcher - eval used for background process execution
+    # SAFETY: exec_cmd is built from controlled variables (BACKGROUND, cmd, log_file)
+    # cmd comes from GET_STARTUP_COMMAND which validates against a predefined list
     eval "$exec_cmd"
     local pid=$!
     

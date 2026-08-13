@@ -82,6 +82,8 @@ pub const TelegramClient = struct {
 //  4. Handle memory management explicitly (allocator used for creation, free for destruction)
 //  
 //  The unsafe operations are isolated to this FFI boundary layer only.
+//
+//  panic-attack: accepted - ffi_kind:zig_ada_ffi - Unsafe pointer casts are required for FFI
 
 pub export fn create_telegram_client(
     api_id: i32,

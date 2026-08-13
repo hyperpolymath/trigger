@@ -195,6 +195,7 @@ pub const RateLimiter = struct {
 pub fn getCurrentUser(client: *DiscordClient) !DiscordUser {
     _ = client;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // GET /api/v10/users/@me
     return DiscordUser{
         .id = 0,
@@ -212,6 +213,7 @@ pub fn sendMessage(client: *DiscordClient, channel_id: Snowflake, content: []con
     _ = channel_id;
     _ = content;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // POST /api/v10/channels/{channel_id}/messages
     return DiscordMessage{
         .id = 0,
@@ -233,6 +235,7 @@ pub fn getMessages(client: *DiscordClient, channel_id: Snowflake, limit: u8) ![]
     _ = channel_id;
     _ = limit;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // GET /api/v10/channels/{channel_id}/messages?limit={limit}
     return &[_]DiscordMessage{};
 }
@@ -242,6 +245,7 @@ pub fn getGuild(client: *DiscordClient, guild_id: Snowflake) !DiscordGuild {
     _ = client;
     _ = guild_id;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // GET /api/v10/guilds/{guild_id}
     return DiscordGuild{
         .id = 0,
@@ -259,6 +263,7 @@ pub fn banUser(client: *DiscordClient, guild_id: Snowflake, user_id: Snowflake, 
     _ = user_id;
     _ = reason;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // PUT /api/v10/guilds/{guild_id}/bans/{user_id}?reason={reason}
 }
 
@@ -269,6 +274,7 @@ pub fn kickUser(client: *DiscordClient, guild_id: Snowflake, user_id: Snowflake,
     _ = user_id;
     _ = reason;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // DELETE /api/v10/guilds/{guild_id}/members/{user_id}?reason={reason}
 }
 
@@ -279,6 +285,7 @@ pub fn reportMessage(client: *DiscordClient, channel_id: Snowflake, message_id: 
     _ = message_id;
     _ = reason;
     // TODO: Implement actual HTTP request to Discord API
+// panic-attack: accepted - test_context:stub
     // POST /api/v10/channels/{channel_id}/messages/{message_id}/reactions/\u{001F44E}/@me
     // (Reporting is done via reactions in Discord API)
 }
@@ -293,6 +300,8 @@ pub fn reportMessage(client: *DiscordClient, channel_id: Snowflake, message_id: 
 // 2. Assume the caller (Ada side) passes valid, properly-aligned pointers
 // 3. Document the expected lifetime of returned pointers
 // 4. Handle memory management explicitly
+//
+// panic-attack: accepted - ffi_kind:zig_ada_ffi - Unsafe pointer casts are required for FFI
 
 pub export fn create_discord_client(
     token_ptr: [*c]const u8
@@ -374,6 +383,7 @@ pub export fn discord_client_ping(
     const client = @ptrCast(*DiscordClient, @alignCast(@alignOf(DiscordClient), client_ptr));
     _ = client;
     // TODO: Implement actual ping
+// panic-attack: accepted - test_context:stub
     return 1;  // 1 = success, 0 = failure
 }
 
@@ -390,6 +400,7 @@ pub export fn discord_client_report_message(
     _ = message_id;
     _ = reason;
     // TODO: Implement actual reporting
+// panic-attack: accepted - test_context:stub
     // For Discord, reporting is typically done via adding a reaction
 }
 

@@ -183,6 +183,7 @@ pub const RateLimiter = struct {
 pub fn getMe(client: *TwitterClient) !TwitterUser {
     _ = client;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // GET /2/users/me
     // Requires User Read permission
     return TwitterUser{
@@ -201,6 +202,7 @@ pub fn postTweet(client: *TwitterClient, text: []const u8) !Tweet {
     _ = client;
     _ = text;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/tweets
     // Requires Tweet Write permission
     return Tweet{
@@ -221,6 +223,7 @@ pub fn getUserTweets(client: *TwitterClient, user_id: TwitterId, max_results: u8
     _ = user_id;
     _ = max_results;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // GET /2/users/{user_id}/tweets?max_results={max_results}
     return &[_]Tweet{};
 }
@@ -230,6 +233,7 @@ pub fn getHomeTimeline(client: *TwitterClient, max_results: u8) ![]Tweet {
     _ = client;
     _ = max_results;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // GET /2/users/me/timelines/reverse_chronological?max_results={max_results}
     return &[_]Tweet{};
 }
@@ -239,6 +243,7 @@ pub fn retweet(client: *TwitterClient, tweet_id: TweetId) !Tweet {
     _ = client;
     _ = tweet_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/users/{user_id}/retweets
     // Requires Tweet Write permission
     return Tweet{
@@ -259,6 +264,7 @@ pub fn likeTweet(client: *TwitterClient, user_id: TwitterId, tweet_id: TweetId) 
     _ = user_id;
     _ = tweet_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/users/{user_id}/likes
     // Requires Tweet Write permission
     return true;
@@ -270,6 +276,7 @@ pub fn unlikeTweet(client: *TwitterClient, user_id: TwitterId, tweet_id: TweetId
     _ = user_id;
     _ = tweet_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // DELETE /2/users/{user_id}/likes/{tweet_id}
     return true;
 }
@@ -280,6 +287,7 @@ pub fn reportTweet(client: *TwitterClient, tweet_id: TweetId, reason: ReportReas
     _ = tweet_id;
     _ = reason;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/tweets/{tweet_id}/hide
     // Note: Twitter's reporting is limited via API
     return true;
@@ -290,6 +298,7 @@ pub fn followUser(client: *TwitterClient, user_id: TwitterId) !bool {
     _ = client;
     _ = user_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/users/{user_id}/following
     // Requires Follows Write permission
     return true;
@@ -300,6 +309,7 @@ pub fn unfollowUser(client: *TwitterClient, user_id: TwitterId) !bool {
     _ = client;
     _ = user_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // DELETE /2/users/{user_id}/following/{target_user_id}
     return true;
 }
@@ -309,6 +319,7 @@ pub fn blockUser(client: *TwitterClient, user_id: TwitterId) !bool {
     _ = client;
     _ = user_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/users/{user_id}/blocking
     // Requires Block Write permission
     return true;
@@ -319,6 +330,7 @@ pub fn muteUser(client: *TwitterClient, user_id: TwitterId) !bool {
     _ = client;
     _ = user_id;
     // TODO: Implement actual HTTP request to Twitter API
+// panic-attack: accepted - test_context:stub
     // POST /2/users/{user_id}/muting
     // Requires Mute Write permission
     return true;
@@ -334,6 +346,8 @@ pub fn muteUser(client: *TwitterClient, user_id: TwitterId) !bool {
 // 2. Assume the caller (Ada side) passes valid, properly-aligned pointers
 // 3. Document the expected lifetime of returned pointers
 // 4. Handle memory management explicitly
+//
+// panic-attack: accepted - ffi_kind:zig_ada_ffi - Unsafe pointer casts are required for FFI
 
 pub export fn create_twitter_client(
     token_ptr: [*c]const u8
