@@ -85,7 +85,9 @@ project Trigger is
       "trigger/tui/main_menu.ads",
       
       --  FFI bindings
-      "trigger/ffi/discord.ads"
+      "trigger/ffi/trigger-ffi-discord.ads",
+      "trigger/ffi/trigger-ffi-telegram.ads",
+      "trigger/ffi/trigger-ffi-twitter.ads"
    );
 
    --  Library dependencies

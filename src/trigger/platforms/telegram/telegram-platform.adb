@@ -13,6 +13,7 @@
 
 with Platform_Types;
 with Platform_Interface;
+with Trigger.FFI.Telegram;
 
 package body Telegram_Platform is
 
@@ -27,6 +28,7 @@ package body Telegram_Platform is
          Result.Current_Session := null;
          Result.Is_Connected := False;
          Result.Is_Authorized := False;
+         Result.Client := Trigger.FFI.Telegram.Create_Client (Api_Id, Api_Hash, Session_Dir);
       end return;
    end Init;
 
@@ -96,18 +98,26 @@ package body Telegram_Platform is
    function Connect (This : Platform_Implementation; Session : Session_Type) 
                      return Boolean is
    begin
-      -- Connect to Telegram servers
-      -- In a real implementation, this would call the Zig FFI
-      This.Set_Connected (True);
-      This.Set_Authorized (True);
-      return True;
+      -- Connect to Telegram servers via FFI
+      if This.Client /= null then
+         declare
+            Result : Integer := Trigger.FFI.Telegram.Connect (This.Client);
+         begin
+            This.Set_Connected (Result = 1);
+            This.Set_Authorized (Result = 1);
+            return Result = 1;
+         end;
+      end if;
+      return False;
    end Connect;
 
    overriding
    procedure Disconnect (This : Platform_Implementation; Session : in out Session_Type) is
    begin
-      -- Disconnect from Telegram servers
-      -- In a real implementation, this would call the Zig FFI
+      -- Disconnect from Telegram servers via FFI
+      if This.Client /= null then
+         Trigger.FFI.Telegram.Disconnect (This.Client);
+      end if;
       This.Set_Connected (False);
       This.Set_Authorized (False);
    end Disconnect;
@@ -116,8 +126,10 @@ package body Telegram_Platform is
    function Is_Authorized (This : Platform_Implementation; Session : Session_Type) 
                        return Boolean is
    begin
-      -- Check if session is authorized
-      -- In a real implementation, this would call the Zig FFI
+      -- Check if session is authorized via FFI
+      if This.Client /= null then
+         return Trigger.FFI.Telegram.Is_Authorized (This.Client) = 1;
+      end if;
       return This.Is_Authorized;
    end Is_Authorized;
 
@@ -252,7 +264,10 @@ package body Telegram_Platform is
    overriding
    function Ping (This : Platform_Implementation) return Boolean is
    begin
-      -- Check if connected
+      -- Check if connected via FFI
+      if This.Client /= null then
+         return Trigger.FFI.Telegram.Ping (This.Client) = 1;
+      end if;
       return This.Is_Connected;
    end Ping;
 

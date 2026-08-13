@@ -12,17 +12,20 @@
 
 package Trigger.FFI.Discord is
 
+   --  Opaque type for void pointers from C
+   type Void_Ptr is access all Integer;
+
    --  Discord client handle (opaque pointer from Zig)
-   type Discord_Client_Ptr is access all void;
+   type Discord_Client_Ptr is access all Integer;
 
    --  Discord message handle
-   type Discord_Message_Ptr is access all void;
+   type Discord_Message_Ptr is access all Integer;
 
    --  Discord user handle
-   type Discord_User_Ptr is access all void;
+   type Discord_User_Ptr is access all Integer;
 
    --  Discord guild (server) handle
-   type Discord_Guild_Ptr is access all void;
+   type Discord_Guild_Ptr is access all Integer;
 
    --  Discord Snowflake type (64-bit ID)
    type Snowflake is mod 2**64;

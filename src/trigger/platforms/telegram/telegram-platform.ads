@@ -13,6 +13,7 @@
 
 with Platform_Types;
 with Platform_Interface;
+with Trigger.FFI.Telegram;
 
 package Telegram_Platform is
 
@@ -26,6 +27,7 @@ package Telegram_Platform is
       Current_Session : access Session_Type := null;
       Is_Connected : Boolean := False;
       Is_Authorized : Boolean := False;
+      Client : Trigger.FFI.Telegram.Telegram_Client_Ptr := null;
    end record;
 
    -- Initialize the platform with API credentials

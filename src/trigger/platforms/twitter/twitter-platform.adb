@@ -13,6 +13,7 @@
 
 with Platform_Types;
 with Platform_Interface;
+with Trigger.FFI.Twitter;
 
 package body Twitter_Platform is
 
@@ -23,6 +24,7 @@ package body Twitter_Platform is
       return Result : constant Platform_Implementation do
          Result.Bearer_Token := Bearer_Token;
          Result.Api_Url := Api_Url;
+         Result.Client := Trigger.FFI.Twitter.Create_Client (Bearer_Token, "", "");
       end return;
    end Init;
 
@@ -76,13 +78,19 @@ package body Twitter_Platform is
    function Connect (This : Platform_Implementation; Session : Session_Type) 
                      return Boolean is
    begin
-      return True;
+      if This.Client /= null then
+         return Trigger.FFI.Twitter.Ping (This.Client) = 1;
+      end if;
+      return False;
    end Connect;
 
    overriding
    procedure Disconnect (This : Platform_Implementation; Session : in out Session_Type) is
    begin
-      null;
+      if This.Client /= null then
+         Trigger.FFI.Twitter.Destroy_Client (This.Client);
+         This.Client := null;
+      end if;
    end Disconnect;
 
    overriding
@@ -219,7 +227,10 @@ package body Twitter_Platform is
    overriding
    function Ping (This : Platform_Implementation) return Boolean is
    begin
-      return True;
+      if This.Client /= null then
+         return Trigger.FFI.Twitter.Ping (This.Client) = 1;
+      end if;
+      return False;
    end Ping;
 
    overriding

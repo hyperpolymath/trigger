@@ -13,6 +13,7 @@
 
 with Platform_Types;
 with Platform_Interface;
+with Trigger.FFI.Discord;
 
 package Discord_Platform is
 
@@ -24,6 +25,7 @@ package Discord_Platform is
    private
       Token : String(1..256);
       Base_Url : String(1..128);
+      Client : Trigger.FFI.Discord.Discord_Client_Ptr := null;
    end record;
    
    -- Override operations from Platform_Interface
