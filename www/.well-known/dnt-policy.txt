@@ -1,0 +1,28 @@
+# Do Not Track (DNT) Policy
+# ==========================
+# This file describes the Trigger project's compliance with Do Not Track (DNT) standards.
+#
+# Trigger is a command-line and TUI application that does not use web tracking technologies.
+# This application:
+#   - Does not collect or store user data via HTTP requests
+#   - Does not use cookies, web beacons, or other tracking mechanisms
+#   - Does not integrate with third-party analytics services
+#   - Does not share user data with third parties
+#
+# CLI/TUI Application Behavior:
+#   - The Trigger application operates locally on the user's machine
+#   - Configuration and data are stored locally in the user's home directory
+#   - No telemetry or usage data is transmitted to external servers
+#   - API interactions (Telegram, Twitter, Discord) are initiated by the user
+#     and use the respective platform's official APIs
+#
+# Web Interface (if applicable):
+#   - If a web interface is added in the future, it will respect DNT headers
+#   - No tracking cookies will be set when DNT is enabled
+#   - No user data will be collected without explicit consent
+#
+# Compliance:
+#   - This application follows the W3C Tracking Preference Expression (DNT) recommendation
+#   - See: https://www.w3.org/TR/tracking-dnt/
+#
+# Last Updated: 2026-08-13

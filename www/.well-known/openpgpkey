@@ -1,0 +1,35 @@
+# OPENPGPKEY (OpenPGP Public Key) Records
+# ===============================================
+# OPENPGPKEY records store OpenPGP public keys in DNS for verification,
+# allowing email clients and other tools to retrieve and verify PGP keys.
+#
+# Format: OPENPGPKEY <base64-encoded-key>
+# The key is stored in a specific binary format and then base64-encoded.
+#
+# For Trigger service PGP key:
+#   Primary key: mQINBF23456gBEADZ3JzIDxzZXJ2ZXJAZXhhbXBsZS5jb20+INh1
+#   (This is a placeholder - replace with actual key during deployment)
+#
+# Generate OPENPGPKEY from a PGP key:
+#   1. Export key in the required binary format
+#   2. Base64 encode it
+#   gpg --export-options export-reset-subkey-passwd --export --armor key-id | ...
+#
+# To generate the binary representation for DNS:
+#   gpg --export key-id | openpgp2dns | base64 -w0
+#
+# Or manually create from ASCII-armored key:
+#   1. Remove headers/footers and newlines
+#   2. Base64 decode
+#   3. Prepend with 0x00 0x04 0x00 (for OpenPGP key format)
+#   4. Base64 encode the result
+#
+# NOTE: Authoritative OPENPGPKEY record is defined in security/bind9/trigger.zone
+# This file is provided for web servers that serve .well-known/ for documentation.
+#
+# For more information: RFC 7929 (OPENPGPKEY)
+# https://tools.ietf.org/html/rfc7929
+#
+# For key generation and management, see:
+# https://www.ietf.org/rfc/rfc4880.txt (OpenPGP Message Format)
+# https://datatracker.ietf.org/doc/html/draft-kocher-opendnssec-openpgpkey-00

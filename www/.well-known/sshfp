@@ -1,0 +1,27 @@
+# SSHFP (SSH Fingerprint) Records
+# ====================================
+# SSHFP records store SSH public key fingerprints in DNS for verification,
+# allowing SSH clients to verify server keys against DNS before first connection.
+#
+# Format: SSHFP <algorithm> <fingerprint-type> <fingerprint>
+#   - Algorithm: 1 = RSA, 2 = DSA, 3 = ECDSA, 4 = Ed25519
+#   - Fingerprint Type: 1 = SHA-1, 2 = SHA-256
+#   - Fingerprint: Hex-encoded hash of the public key
+#
+# For Trigger service SSH keys:
+#   - Ed25519 key (SHA-256): <fingerprint-here>
+#   - RSA key (SHA-256): <fingerprint-here>
+#
+# Generate SSHFP from known_hosts:
+#   ssh-keygen -r hostname -f /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $3, $2, $1}'
+#   ssh-keygen -r hostname -f /etc/ssh/ssh_host_rsa_key.pub | awk '{print $3, $2, $1}'
+#
+# NOTE: Authoritative SSHFP records are defined in security/bind9/trigger.zone
+# This file is provided for web servers that serve .well-known/ for documentation.
+#
+# For more information: RFC 4255 (SSHFP)
+# https://tools.ietf.org/html/rfc4255
+#
+# Current status: SSHFP records are commented out in DNS zone file
+# (require actual key fingerprints from deployment servers)
+# Uncomment and populate in security/bind9/trigger.zone when keys are generated.
