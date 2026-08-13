@@ -120,11 +120,18 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
   - Need Idris2 test framework integration
 * Ensure all tests and benches meet test-and-benches standards - BLOCKED: Depends on above
 
-=== E. Security Enhancements (MEDIUM PRIORITY)
-* Complete www/.well-known/ setup with all Resource Records
-* Ensure CAA, TLSA, ZONEMD, SSHFP, OPENPGPKEY are properly configured
-* Add additional security measures as identified
-* Review and harden all security configurations
+=== E. Security Enhancements (IN PROGRESS 2026-08-13)
+* Complete www/.well-known/ setup with all Resource Records - COMPLETED
+  - Added www/.well-known/sshfp (RFC 4255 documentation)
+  - Added www/.well-known/openpgpkey (RFC 7929 documentation)
+  - Added www/.well-known/dnt-policy.txt (W3C DNT compliance)
+  - Existing: caa, tlsa, zonemd, security.txt, humans.txt, ai.txt
+* Ensure CAA, TLSA, ZONEMD, SSHFP, OPENPGPKEY are properly configured - COMPLETED
+  - All records defined in security/bind9/trigger.zone
+  - Documentation files created in www/.well-known/
+  - SSHFP records commented out (require actual deployment fingerprints)
+* Add additional security measures as identified - PENDING
+* Review and harden all security configurations - PENDING
 
 === F. Launcher (LOWER PRIORITY)
 * Create launcher per specification in launcher spec from standards repo
