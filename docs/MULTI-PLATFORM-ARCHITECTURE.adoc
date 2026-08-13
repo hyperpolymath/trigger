@@ -1,0 +1,686 @@
+//
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2024-2026 hyperpolymath <hyperpolymath@open.ac.uk>
+//
+= Multi-Platform Social Media Architecture
+:description: Architecture for expanding Trigger to support multiple social media platforms
+:author: hyperpolymath
+:revdate: 2026-08-13
+:revnumber: 1.0.0
+:language: en
+:toc: auto
+:toclevels: 3
+:icons: font
+:source-highlighter: pygments
+
+== Overview
+
+This document describes the architecture for expanding the Trigger application
+to support multiple social media platforms beyond Telegram. The design maintains
+the existing standards: Ada/SPARK core, Zig FFI with unified-hexadeca-api, and
+Idris2 API layer.
+
+== Architecture Principles
+
+=== Separation of Concerns
+
+The architecture follows a strict separation between:
+
+1. **Platform-Agnostic Core** (Ada/SPARK): Business logic that works across all platforms
+2. **Platform-Specific Adapters** (Zig + Idris2): Platform-specific implementations
+3. **FFI Boundary** (Zig): Safe interface between Ada and external libraries
+
+=== Type Safety
+
+All ABIs (Application Binary Interfaces) are defined in Idris2, providing:
+
+- Dependent types for validation
+- Algebraic data types for safety
+- Type-level contracts and invariants
+- Compile-time proofs where possible
+
+=== Memory Safety
+
+All FFI implementations are in pure Zig, using unified-hexadeca-api for:
+
+- Explicit memory management
+- Bounds checking
+- Pointer safety with `@ptrCast` and `@alignCast`
+- Proper error handling
+
+== Architecture Diagram
+
+----
+┌─────────────────────────────────────────────────────────────────────┐
+│                         TRIGGER APPLICATION                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    ADA/SPARK CORE                              │   │
+│  │  ┌─────────────────────────────────────────────────────┐     │   │
+│  │  │              Platform-Agnostic Layer                    │     │   │
+│  │  │  • src/trigger/core/platform/                          │     │   │
+│  │  │    └── platform.ads (Platform interface)              │     │   │
+│  │  │  • src/trigger/core/session/                           │     │   │
+│  │  │    └── session_manager.adb (Generic sessions)          │     │   │
+│  │  │  • src/trigger/core/account/                           │     │   │
+│  │  │    └── account_manager.adb (Generic accounts)          │     │   │
+│  │  │  • src/trigger/core/reporting/                        │     │   │
+│  │  │    └── reporter.adb (Generic reporting logic)          │     │   │
+│  │  └─────────────────────────────────────────────────────┘     │   │
+│  │                                                                 │   │
+│  │  ┌─────────────────────────────────────────────────────┐     │   │
+│  │  │              Platform-Specific Core                      │     │   │
+│  │  │  • src/trigger/platforms/telegram/                     │     │   │
+│  │  │  │   ├── client.adb (Telegram-specific logic)           │     │   │
+│  │  │  │   └── types.adb (Telegram types)                    │     │   │
+│  │  │  • src/trigger/platforms/discord/                      │     │   │
+│  │  │  │   ├── client.adb (Discord-specific logic)            │     │   │
+│  │  │  │   └── types.adb (Discord types)                     │     │   │
+│  │  │  • src/trigger/platforms/twitter/                      │     │   │
+│  │  │  │   ├── client.adb (Twitter-specific logic)            │     │   │
+│  │  │  │   └── types.adb (Twitter types)                     │     │   │
+│  │  └─────────────────────────────────────────────────────┘     │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    IDRIS2 API LAYER                               │   │
+│  │  ┌─────────────────────────────────────────────────────┐     │   │
+│  │  │              Generic Interface                           │     │   │
+│  │  │  ffi/idris2/SocialMediaAPI.idr                          │     │   │
+│  │  │    • Platform (data type)                               │     │   │
+│  │  │    • SocialError (error type)                           │     │   │
+│  │  │    • Account, Session, Message (records)                │     │   │
+│  │  │    • SocialPlatform (interface)                          │     │   │
+│  │  │    • createPlatform (factory)                            │     │   │
+│  │  └─────────────────────────────────────────────────────┘     │   │
+│  │                                                                 │   │
+│  │  ┌─────────────────────────────────────────────────────┐     │   │
+│  │  │              Platform Implementations                     │     │   │
+│  │  │  • ffi/idris2/TelegramAPI.idr                           │     │   │
+│  │  │  • ffi/idris2/DiscordAPI.idr                            │     │   │
+│  │  │  • ffi/idris2/TwitterAPI.idr                            │     │   │
+│  │  │  • ... (implement SocialPlatform interface)             │     │   │
+│  │  └─────────────────────────────────────────────────────┘     │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    ZIG FFI LAYER                                 │   │
+│  │  ┌─────────────────────────────────────────────────────┐     │   │
+│  │  │              Common Utilities                              │     │   │
+│  │  │  ffi/zig/social_media/common.zig                         │     │   │
+│  │  │    • Platform enum (matches Idris2)                      │     │   │
+│  │  │    • SocialErrorCode enum                                 │     │   │
+│  │  │    • RateLimitInfo struct                                 │     │   │
+│  │  │    • HTTP utilities                                       │     │   │
+│  │  │    • JSON utilities (stubs)                               │     │   │
+│  │  │    • Logging utilities                                     │     │   │
+│  │  │    • Rate limit management                                 │     │   │
+│  │  └─────────────────────────────────────────────────────┘     │   │
+│  │                                                                 │   │
+│  │  ┌─────────────────────────────────────────────────────┐     │   │
+│  │  │              Platform-Specific FFI                          │     │   │
+│  │  │  • ffi/zig/telegram/telegram.zig                           │     │   │
+│  │  │  │   └── mod.zig (module exports)                         │     │   │
+│  │  │  • ffi/zig/discord/discord.zig                            │     │   │
+│  │  │  • ffi/zig/twitter/twitter.zig                            │     │   │
+│  │  │  • ... (implement platform-specific FFI)                 │     │   │
+│  │  └─────────────────────────────────────────────────────┘     │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+----
+
+== File Structure
+
+----
+ffi/
+├── idris2/
+│   ├── SocialMediaAPI.idr          # ✅ Generic platform interface
+│   ├── TelegramAPI.idr            # ✅ Telegram implementation
+│   ├── DiscordAPI.idr             # ✅ Discord implementation
+│   └── TwitterAPI.idr             # ✅ Twitter/X implementation
+│
+└── zig/
+    ├── social_media/
+    │   └── common.zig              # ✅ Common utilities & types
+    │
+    ├── telegram/
+    │   ├── mod.zig                 # ✅ Module exports
+    │   └── telegram.zig            # ✅ Telegram FFI
+    │
+    ├── discord/
+    │   └── discord.zig             # ✅ Discord FFI
+    │
+    └── twitter/
+        └── twitter.zig             # ✅ Twitter/X FFI
+----
+
+== Adding a New Platform
+
+To add support for a new social media platform (e.g., Instagram), follow these steps:
+
+=== Step 1: Create Idris2 ABI (API Layer)
+
+Create `ffi/idris2/InstagramAPI.idr`:
+
+[source,idris]
+----
+module InstagramAPI
+
+import SocialMediaAPI
+import Data.String
+import Data.Maybe
+import Control.Monad.Effect
+
+// Instagram-specific types
+record InstagramUser where
+  constructor MkInstagramUser
+  inherit Account
+  -- Add Instagram-specific fields
+  username: String
+  full_name: Maybe String
+  bio: Maybe String
+  profile_pic_url: Maybe String
+
+record InstagramPost where
+  constructor MkInstagramPost
+  inherit Message
+  -- Add Instagram-specific fields
+  post_id: String
+  media_url: Maybe String
+  caption: Maybe String
+  likes: Nat
+  comments: Nat
+
+// Platform implementation
+record InstagramPlatform where
+  constructor MkInstagramPlatform
+
+// Implement SocialPlatform interface
+implementation [SocialPlatform InstagramPlatform] InstagramPlatform where
+  getPlatform p = Instagram
+  getCapabilities _ = MkPlatformCapabilities{...}
+  
+  // Implement all required methods
+  createSession = ...
+  destroySession = ...
+  connect = ...
+  disconnect = ...
+  isAuthorized = ...
+  refreshSession = ...
+  getAccount = ...
+  listAccounts = ...
+  updateAccount = ...
+  getMessages = ...
+  getMessage = ...
+  reportMessage = ...
+  reportMessages = ...
+  ping = ...
+  getRateLimits = ...
+
+// Instagram-specific functions
+export
+getProfile : InstagramPlatform -> Session -> String -> Effect (Either SocialError InstagramUser)
+getProfile = ...
+----
+
+=== Step 2: Create Zig FFI (FFI Layer)
+
+Create `ffi/zig/instagram/instagram.zig`:
+
+[source,zig]
+----
+const std = @import("std");
+const common = @import("../social_media/common.zig");
+
+// Instagram-specific constants
+pub const INSTAGRAM_API_BASE = "https://graph.instagram.com/v18.0";
+
+// Instagram-specific types
+pub const InstagramClient = struct {
+    allocator: std.mem.Allocator,
+    access_token: []u8,
+    // ... other fields
+    
+    pub fn init(allocator: std.mem.Allocator, access_token: []const u8) !InstagramClient {
+        // Initialize client
+    }
+    
+    pub fn deinit(self: *InstagramClient) void {
+        // Clean up
+    }
+    
+    // Platform-specific methods
+    pub fn getProfile(self: *InstagramClient, user_id: []const u8) !void {
+        // Implement
+    }
+};
+
+// C-exported functions for Ada FFI
+pub export fn create_instagram_client(token_ptr: [*c]const u8) callconv(.C) ?*anyopaque {
+    const allocator = std.heap.page_allocator;
+    const token = std.c.toZigString(token_ptr);
+    var client = try InstagramClient.init(allocator, token);
+    return @ptrCast([*]anyopaque, &client);
+}
+
+pub export fn destroy_instagram_client(client_ptr: [*c]*anyopaque) callconv(.C) void {
+    const client = @ptrCast(*InstagramClient, @alignCast(@alignOf(InstagramClient), client_ptr));
+    client.deinit();
+    std.heap.page_allocator.free(client);
+}
+----
+
+=== Step 3: Update Factory Function
+
+Update `ffi/idris2/SocialMediaAPI.idr` to include the new platform:
+
+[source,idris]
+----
+export
+createPlatform : Platform -> Effect (Maybe (Any SocialPlatform))
+createPlatform platform = do
+  case platform of
+    Telegram  => pure (Just (Any (MkTelegramPlatform : SocialPlatform TelegramPlatform)))
+    Discord   => pure (Just (Any (MkDiscordPlatform : SocialPlatform DiscordPlatform)))
+    Twitter   => pure (Just (Any (MkTwitterPlatform : SocialPlatform TwitterPlatform)))
+    Instagram => pure (Just (Any (MkInstagramPlatform : SocialPlatform InstagramPlatform)))  // NEW
+    Reddit     => pure Nothing
+    -- ...
+----
+
+Update the supported platforms list:
+
+[source,idris]
+----
+export
+getSupportedPlatforms : List Platform
+getSupportedPlatforms = [Telegram, Discord, Twitter, Instagram]  // UPDATED
+----
+
+=== Step 4: Create Ada/SPARK Platform Adapter
+
+Create `src/trigger/platforms/instagram/`:
+
+----
+platforms/instagram/
+├── instagram-platform.ads  # Package specification
+├── instagram-platform.adb  # Platform-specific logic
+├── client.adb              # Client implementation
+├── client.ads              # Client specification
+├── types.adb               # Instagram types
+└── types.ads               # Instagram type specs
+----
+
+[source,ada]
+----
+-- src/trigger/platforms/instagram/instagram-platform.adb
+package body Instagram_Platform is
+
+   function Get_Platform return Platform_Type is
+   begin
+      return Telegram;  -- Replace with Instagram when type is added
+   end Get_Platform;
+
+   -- Implement all Platform_Interface operations
+   -- ...
+
+end Instagram_Platform;
+----
+
+=== Step 5: Register Platform in Core
+
+Update `src/trigger/core/platform/factory.adb` to register the new platform.
+
+=== Step 6: Update Configuration
+
+Add platform-specific configuration to the configuration system.
+
+=== Step 7: Add Tests
+
+Create tests for the new platform in `tests/platforms/instagram/`.
+
+== Platform Interface (SocialPlatform)
+
+The `SocialPlatform` interface in `ffi/idris2/SocialMediaAPI.idr` defines
+the contract that all platform implementations must fulfill:
+
+[source,idris]
+----
+interface SocialPlatform a where
+  -- Platform information
+  getPlatform       : a -> Platform
+  getCapabilities   : a -> PlatformCapabilities
+  
+  -- Session management
+  createSession     : a -> Account -> Effect (Either SocialError Session)
+  destroySession    : a -> Session -> Effect (Either SocialError ())
+  connect           : a -> Session -> Effect (Either SocialError Bool)
+  disconnect        : a -> Session -> Effect (Either SocialError ())
+  isAuthorized      : a -> Session -> Effect (Either SocialError Bool)
+  refreshSession    : a -> Session -> Effect (Either SocialError Session)
+  
+  -- Account management
+  getAccount        : a -> Session -> String -> Effect (Either SocialError Account)
+  listAccounts      : a -> Session -> Effect (Either SocialError (List Account))
+  updateAccount     : a -> Session -> Account -> Effect (Either SocialError Account)
+  
+  -- Message operations
+  getMessages       : a -> Session -> String -> Nat -> Effect (Either SocialError (List Message))
+  getMessage        : a -> Session -> String -> String -> Effect (Either SocialError Message)
+  
+  -- Reporting operations
+  reportMessage     : a -> Session -> Message -> ReportReason -> String -> Effect (Either SocialError ReportResult)
+  reportMessages    : a -> Session -> List Message -> ReportReason -> String -> Effect (Either SocialError (List ReportResult))
+  
+  -- Platform health
+  ping             : a -> Effect (Either SocialError ())
+  getRateLimits    : a -> Session -> Effect (Either SocialError RateLimitInfo)
+----
+
+== Platform Capabilities
+
+Each platform declares its capabilities through the `PlatformCapabilities` record:
+
+[source,idris]
+----
+record PlatformCapabilities where
+  constructor MkPlatformCapabilities
+  
+  supportsMessaging     : Bool      -- Can send/receive messages
+  supportsReporting     : Bool      -- Can report content
+  supportsMultiAccount  : Bool      -- Supports multiple accounts
+  supportsSessionPersist: Bool      -- Can persist sessions
+  supportsRateLimitInfo : Bool      -- Provides rate limit info
+  supportsWebhooks      : Bool      -- Supports webhook notifications
+  supportsSearch        : Bool      -- Can search content
+  supportsMediaUpload   : Bool      -- Can upload media
+  supportsMediaDownload : Bool      -- Can download media
+----
+
+The core application uses these capabilities to adapt its behavior:
+
+- If `supportsMultiAccount` is false, hide multi-account UI
+- If `supportsSessionPersist` is false, don't save sessions
+- If `supportsRateLimitInfo` is true, show rate limit warnings
+- If `supportsWebhooks` is true, enable webhook configuration
+
+== Error Handling
+
+All platforms use the unified `SocialError` type for consistent error reporting:
+
+[source,idris]
+----
+data SocialError = 
+  | NetworkError String           -- Network connectivity issue
+  | AuthError String             -- Authentication/authorization failure
+  | RateLimitError Nat           -- Rate limit exceeded (seconds until retry)
+  | NotFoundError String         -- Resource not found
+  | PermissionError String       -- Insufficient permissions
+  | PlatformError Platform String -- Platform-specific error
+  | UnknownError String          -- Unknown/unclassified error
+----
+
+Platforms can extend this with platform-specific error types by using
+`PlatformError` with their platform identifier.
+
+== Platform-Specific Extensions
+
+Each platform can define its own types and functions beyond the core
+`SocialPlatform` interface. These are exported from the platform's module
+and can be used by the Ada/SPARK core when targeting that specific platform.
+
+=== Telegram-Specific
+
+- `TelegramSession` - Session with DC (Data Center) information
+- `TelegramMessage` - Message with MTProto-specific fields
+- `TelegramAccount` - Account with user details
+- Functions: `startAuth`, `sendCode`, `signIn`, `getMe`
+
+=== Discord-Specific
+
+- `Snowflake` - Discord's unique ID type
+- `Guild` - Discord server
+- `Channel` - Discord text/voice channel
+- `DiscordUser` - Discord user with discriminator
+- `DiscordMessage` - Message with embeds and attachments
+- `Role` - Discord role
+- Functions: `sendMessage`, `getGuild`, `getChannel`, `getUser`,
+  `banUser`, `kickUser`, `addRole`, `removeRole`
+
+=== Twitter-Specific
+
+- `TwitterId` - Twitter user/tweet ID
+- `TweetId` - Tweet identifier
+- `TwitterUser` - User with followers/following counts
+- `Tweet` - Tweet with metrics
+- `TweetAttachment` - Media attachment
+- Functions: `postTweet`, `getUserTimeline`, `getHomeTimeline`,
+  `retweet`, `likeTweet`, `followUser`, `blockUser`, `muteUser`
+
+== Rate Limiting
+
+Each platform has its own rate limiting characteristics:
+
+| Platform   | Rate Limit Window | Requests | Notes |
+|------------|-------------------|----------|-------|
+| Telegram   | 1 second          | 30       | Per DC |
+| Discord    | 1 second          | 50       | Per guild |
+| Twitter    | 15 minutes        | 300      | Per endpoint |
+| Instagram  | 1 hour            | 200      | Per token |
+| Reddit     | 10 seconds        | 60       | Per endpoint |
+
+The Zig FFI layer includes rate limit management utilities in
+`ffi/zig/social_media/common.zig`:
+
+- `RateLimitState` - Tracks rate limits per endpoint
+- `shouldWait` - Check if should wait for rate limit
+- `updateLimit` - Update rate limit for an endpoint
+- `getRemaining` - Get remaining time for an endpoint
+
+== Authentication
+
+Each platform uses its own authentication mechanism:
+
+=== Telegram
+
+- Uses MTProto 2.0 authorization
+- Requires `api_id` and `api_hash` from my.telegram.org
+- Phone number verification with SMS/code
+- Session files for persistence
+
+=== Discord
+
+- Uses OAuth 2.0 with Bot or User tokens
+- Bot tokens: `Bot <token>`
+- User tokens: `Bearer <token>`
+- Requires specific scopes/permissions
+- Token revocation via `/revoke`
+
+=== Twitter
+
+- Uses OAuth 2.0 Bearer Token (for app-only auth)
+- Or OAuth 1.0a (for user auth)
+- Requires Developer Portal app creation
+- Scopes: `tweet.read`, `tweet.write`, `users.read`, etc.
+
+The `AuthTokens` struct in `common.zig` provides a standard format:
+
+[source,zig]
+----
+pub const AuthTokens = extern struct {
+    access_token: []const u8,
+    refresh_token: []const u8,
+    expires_in: u64,  // seconds
+    token_type: []const u8,
+};
+----
+
+== Security Considerations
+
+=== Token Storage
+
+- All access tokens should be encrypted at rest
+- Use platform-specific encryption (AES-256 for Telegram sessions)
+- Never log tokens or sensitive data
+
+=== Rate Limiting
+
+- Respect platform rate limits
+- Implement exponential backoff on 429 responses
+- Use separate rate limiters per endpoint/platform
+
+=== Error Handling
+
+- Never expose platform-specific error details to users
+- Sanitize error messages before logging/displaying
+- Implement retry logic with jitter for transient errors
+
+=== Input Validation
+
+- Validate all platform IDs (Snowflakes, Twitter IDs, etc.)
+- Sanitize all user input before sending to APIs
+- Validate message lengths against platform limits
+
+== Testing Strategy
+
+Each platform implementation should include:
+
+1. **Unit Tests**: Test individual functions in isolation (Idris2)
+2. **Integration Tests**: Test FFI bindings (Zig)
+3. **E2E Tests**: Test complete workflows (Ada/SPARK)
+4. **Mock Tests**: Test with mocked API responses
+
+Test files should be in:
+
+----
+tests/
+├── unit/
+│   ├── platforms/
+│   │   ├── telegram/
+│   │   ├── discord/
+│   │   └── twitter/
+│   └── ...
+├── integration/
+│   ├── ffi/
+│   │   ├── zig/
+│   │   └── idris2/
+│   └── ...
+└── e2e/
+    ├── platforms/
+    │   ├── telegram/
+    │   ├── discord/
+    │   └── twitter/
+    └── ...
+----
+
+== Configuration
+
+Platform configurations are stored in the configuration system:
+
+[source,json]
+----
+{
+  "platforms": {
+    "telegram": {
+      "enabled": true,
+      "api_id": 12345,
+      "api_hash": "abcdef...",
+      "session_directory": "./sessions/telegram",
+      "rate_limits": {
+        "enabled": true,
+        "retry_after": 5
+      }
+    },
+    "discord": {
+      "enabled": true,
+      "token": "Bot ABC123...",
+      "intents": ["GUILDS", "GUILD_MESSAGES"],
+      "rate_limits": {
+        "enabled": true,
+        "per_guild": true
+      }
+    },
+    "twitter": {
+      "enabled": true,
+      "bearer_token": "AAAA...",
+      "scopes": ["tweet.read", "tweet.write"],
+      "rate_limits": {
+        "enabled": true,
+        "window_seconds": 900
+      }
+    }
+  }
+}
+----
+
+== Future Enhancements
+
+=== Platform Plugin System
+
+Implement a dynamic plugin system to load platform implementations at runtime:
+
+- Load `.so`/`.dll`/`.dylib` files for each platform
+- Use a stable ABI for plugin compatibility
+- Support hot-reloading of plugins
+- Plugin version checking
+
+=== Unified Configuration
+
+Create a unified configuration schema that works across all platforms:
+
+- Common configuration fields
+- Platform-specific configuration sections
+- Configuration validation
+- Migration utilities
+
+=== Cross-Platform Operations
+
+Implement operations that work across multiple platforms:
+
+- Cross-posting: Send same message to multiple platforms
+- Synchronized reporting: Report content on all platforms
+- Unified analytics: Aggregate metrics across platforms
+- Bulk operations: Apply operation to all enabled platforms
+
+=== Platform Health Monitoring
+
+Implement health checks for each platform:
+
+- API availability monitoring
+- Rate limit tracking
+- Error rate monitoring
+- Automatic failover (if multiple accounts)
+
+== References
+
+- https://core.telegram.org/api[Telegram API Documentation]
+- https://discord.com/developers/docs/intro[Discord API Documentation]
+- https://developer.twitter.com/en/docs/twitter-api[Twitter API v2 Documentation]
+- https://developers.facebook.com/docs/instagram-api[Instagram API Documentation]
+- https://www.reddit.com/dev/api/[Reddit API Documentation]
+
+== Appendix: Current Implementation Status
+
+[cols="1,1,1,1",options="header"]
+|===  
+| Platform | Idris2 ABI | Zig FFI | Ada/SPARK 
+
+| Telegram | ✅ Complete | ✅ Complete | ✅ Complete 
+| Discord | ✅ Complete | ✅ Complete | ⏳ TODO 
+| Twitter | ✅ Complete | ✅ Complete | ⏳ TODO 
+| Instagram | ❌ Not Started | ❌ Not Started | ❌ Not Started 
+| Reddit | ❌ Not Started | ❌ Not Started | ❌ Not Started 
+| Facebook | ❌ Not Started | ❌ Not Started | ❌ Not Started 
+| YouTube | ❌ Not Started | ❌ Not Started | ❌ Not Started 
+| TikTok | ❌ Not Started | ❌ Not Started | ❌ Not Started 
+| LinkedIn | ❌ Not Started | ❌ Not Started | ❌ Not Started 
+|===  
+
+Next steps:
+1. Create Ada/SPARK platform adapters for Discord and Twitter
+2. Add platform selection to CLI
+3. Update TUI to show all supported platforms
+4. Add platform-specific configuration
+5. Implement cross-platform operations
