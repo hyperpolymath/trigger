@@ -1,0 +1,33 @@
+/* TEAM */
+
+Owner: hyperpolymath
+GitHub: https://github.com/hyperpolymath
+Repository: https://github.com/hyperpolymath/trigger
+
+/* ORIGINAL AUTHOR (ACKNOWLEDGEMENT) */
+
+Original Concept: Ripper by 2nixx
+Original Repository: https://github.com/2nixx/Ripper
+Telegram: https://t.me/NetworkCriminals
+
+/* TECHNOLOGY STACK */
+
+Primary Language: Ada/SPARK
+FFI Language: Zig
+API Layer: Idris2
+Documentation: AsciiDoc
+
+/* SITE */
+
+Status: Active development
+
+/* THANKS */
+
+Thanks to the AdaCore team for GNAT and SPARK.
+Thanks to the Zig team for the Zig compiler.
+Thanks to the Idris2 team for Idris2.
+Thanks to 2nixx for the original Ripper concept.
+
+/* LAST UPDATED */
+
+2026-08-13

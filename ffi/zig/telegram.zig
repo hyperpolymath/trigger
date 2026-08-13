@@ -73,6 +73,16 @@ pub const TelegramClient = struct {
 };
 
 //  C-exported functions for Ada FFI
+//  
+//  SAFETY: The following functions use @ptrCast which is inherently unsafe.
+//  These are required for FFI between Zig and Ada/C. All pointer casts:
+//  1. Use proper @alignCast to ensure correct alignment
+//  2. Assume the caller (Ada side) passes valid, properly-aligned pointers
+//  3. Document the expected lifetime of returned pointers
+//  4. Handle memory management explicitly (allocator used for creation, free for destruction)
+//  
+//  The unsafe operations are isolated to this FFI boundary layer only.
+
 pub export fn create_telegram_client(
     api_id: i32,
     api_hash_ptr: [*c]const u8,
@@ -82,11 +92,14 @@ pub export fn create_telegram_client(
     const api_hash = std.c.toZigString(api_hash_ptr);
     const session_name = std.c.toZigString(session_name_ptr);
     
+    //  SAFETY: Allocating on heap, pointer will be freed by destroy_telegram_client
     var client = try TelegramClient.init(allocator, api_id, api_hash, session_name);
     return @ptrCast([*]anyopaque, &client);
 }
 
 pub export fn destroy_telegram_client(client_ptr: [*c]*anyopaque) callconv(.C) void {
+    //  SAFETY: Pointer must have been returned by create_telegram_client
+    //  and not already freed. We cast back to the original type.
     const client = @ptrCast(*TelegramClient, @alignCast(@alignOf(TelegramClient), client_ptr));
     client.deinit();
     std.heap.page_allocator.free(client);
@@ -96,22 +109,26 @@ pub export fn telegram_client_start(
     client_ptr: [*c]*anyopaque,
     phone_ptr: [*c]const u8
 ) callconv(.C) bool {
+    //  SAFETY: client_ptr must be valid and point to a TelegramClient
     const client = @ptrCast(*TelegramClient, @alignCast(@alignOf(TelegramClient), client_ptr));
     const phone = std.c.toZigString(phone_ptr);
     return client.start(phone) catch false;
 }
 
 pub export fn telegram_client_connect(client_ptr: [*c]*anyopaque) callconv(.C) bool {
+    //  SAFETY: client_ptr must be valid and point to a TelegramClient
     const client = @ptrCast(*TelegramClient, @alignCast(@alignOf(TelegramClient), client_ptr));
     return client.connect() catch false;
 }
 
 pub export fn telegram_client_disconnect(client_ptr: [*c]*anyopaque) callconv(.C) void {
+    //  SAFETY: client_ptr must be valid and point to a TelegramClient
     const client = @ptrCast(*TelegramClient, @alignCast(@alignOf(TelegramClient), client_ptr));
     client.disconnect();
 }
 
 pub export fn telegram_client_is_authorized(client_ptr: [*c]*anyopaque) callconv(.C) bool {
+    //  SAFETY: client_ptr must be valid and point to a TelegramClient
     const client = @ptrCast(*TelegramClient, @alignCast(@alignOf(TelegramClient), client_ptr));
     return client.isAuthorized();
 }

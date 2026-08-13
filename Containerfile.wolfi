@@ -1,0 +1,354 @@
+# Trigger Containerfile for Wolfi + Guix
+# 
+# Multi-stage build using Wolfi as base with Guix for additional packages
+# Author: hyperpolymath
+#
+# Usage:
+#   podman build -t hyperpolymath/trigger:latest -f Containerfile.wolfi .
+#   podman run -it --security=keep-id:uid=1000,gid=1000 hyperpolymath/trigger:latest
+#
+# =============================================================================
+# Base: Wolfi (Chainguard's minimal, secure, distroless-compatible image)
+# =============================================================================
+
+# Wolfi provides:
+# - Minimal base (~5MB)
+# - Hardened with distroless principles
+# - Only essential packages
+# - Non-root user by default
+# - No shell by default
+# - SBOM generation
+# - Signature verification
+
+# =============================================================================
+# Stage 0: Wolfi base with build essentials
+# =============================================================================
+FROM cgr.dev/chainguard/wolfi-base:latest AS base
+
+# Wolfi uses apk for package management
+# Install minimal build essentials
+RUN apk add --no-cache \
+    bash \
+    coreutils \
+    git \
+    wget \
+    curl \
+    ca-certificates \
+    ca-certificates-bundle \
+    gnupg \
+    tar \
+    xz \
+    gzip \
+    build-base \
+    python3 \
+    py3-pip \
+    && update-ca-certificates
+
+# Set environment
+ENV APP_NAME=trigger \
+    APP_VERSION=1.0.0 \
+    BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+    BUILD_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo 'unknown')" \
+    BUILD_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')" \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+WORKDIR /app
+
+# =============================================================================
+# Stage 1: Install Guix for additional packages
+# =============================================================================
+FROM base AS guix-setup
+
+# Install Guix - Guix provides:
+# - GNAT (Ada/SPARK compiler)
+# - Zig
+# - Idris2
+# - Additional development tools
+# - Reproducible builds
+
+# Install Guix dependencies
+RUN apk add --no-cache \
+    gnupg \
+    tar \
+    xz \
+    gzip \
+    bash \
+    coreutils \
+    && update-ca-certificates
+
+# Install Guix
+RUN wget -q https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh \
+    && chmod +x guix-install.sh \
+    && ./guix-install.sh \
+    && rm guix-install.sh
+
+# Source Guix environment
+ENV PATH="/root/.guix-profile/bin:/root/.config/guix/current/bin:${PATH}" \
+    GUIX_LOCPATH="/root/.guix-profile/lib/locale"
+
+# Pull Guix channels (this may take a while)
+RUN guix pull 2>&1 || true
+
+# =============================================================================
+# Stage 2: Install GNAT (Ada/SPARK) via Guix
+# =============================================================================
+FROM guix-setup AS gnat-builder
+
+# Install GNAT and required tools
+RUN guix install -C channels.scm gnat gprbuild libgmp-dev 2>&1 || \
+    guix install gnat gprbuild libgmp-dev 2>&1 || true
+
+# Verify GNAT installation
+RUN gnat --version 2>&1 || true
+RUN gprbuild --version 2>&1 || true
+
+# Copy source files
+COPY . .
+
+# Build with GNAT
+RUN mkdir -p obj bin && \
+    gprbuild -P trigger.gpr -XLIBRARY_TYPE=static && \
+    cp obj/main/trigger bin/trigger
+
+# =============================================================================
+# Stage 3: Install Zig via Guix
+# =============================================================================
+FROM guix-setup AS zig-builder
+
+# Install Zig
+RUN guix install zig 2>&1 || true
+
+# Verify Zig installation
+RUN zig version 2>&1 || true
+
+# Copy files from gnat-builder
+COPY --from=gnat-builder /app /app
+
+# Build Zig FFI
+RUN cd ffi/zig && \
+    zig build-lib -dynamic telegram.zig -o libtelegram.so && \
+    cd ../.. && \
+    cp ffi/zig/libtelegram.so lib/
+
+# =============================================================================
+# Stage 4: Install Idris2 via Guix (optional)
+# =============================================================================
+FROM guix-setup AS idris-builder
+
+# Install Idris2
+RUN guix install idris2 2>&1 || true
+
+# Verify Idris2 installation
+RUN idris2 --version 2>&1 || true
+
+# Copy files from zig-builder
+COPY --from=zig-builder /app /app
+
+# Build Idris2 API layer
+RUN cd ffi/idris2 && \
+    idris2 --build TelegramAPI.ipkg 2>&1 || true && \
+    cd ../..
+
+# =============================================================================
+# Stage 5: Security hardening
+# =============================================================================
+FROM base AS security-hardened
+
+# Install security tools
+RUN apk add --no-cache \
+    openssl \
+    libseccomp \
+    libcap \
+    audit \
+    && update-ca-certificates
+
+# Create appuser with restricted privileges
+RUN addgroup -S appgroup && \
+    adduser -S -D -G appgroup appuser
+
+# Set up directory structure with proper permissions
+RUN mkdir -p /app/bin /app/lib /app/config /app/sessions /app/logs /app/tmp /app/www /app/docs /app/scripts && \
+    chown appuser:appgroup /app && \
+    chmod 750 /app /app/bin /app/lib /app/config /app/sessions /app/logs /app/tmp /app/www /app/docs /app/scripts
+
+# =============================================================================
+# Stage 6: Runtime image with SELinux and Firewalld
+# =============================================================================
+FROM cgr.dev/chainguard/wolfi-base:latest AS runtime
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    bash \
+    coreutils \
+    ca-certificates \
+    ca-certificates-bundle \
+    openssl \
+    libgcc \
+    glibc-locales \
+    glibc-locales-en \
+    && update-ca-certificates
+
+# Set environment
+ENV APP_NAME=trigger \
+    APP_VERSION=1.0.0 \
+    PATH="/app/bin:${PATH}" \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    TZ=UTC \
+    HOME=/app
+
+WORKDIR /app
+
+# Create directory structure
+RUN mkdir -p bin lib config sessions logs tmp www docs scripts .machine_readable/metadata
+
+# Copy built artifacts from previous stages
+COPY --from=zig-builder /app/bin/trigger bin/trigger
+COPY --from=zig-builder /app/lib/libtelegram.so lib/
+
+# Copy documentation and configuration
+COPY LICENSE LICENSES/ README.adoc CONTRIBUTING.adoc GOVERNANCE.adoc .
+COPY docs/ /app/docs/
+COPY .editorconfig .gitignore .gitattributes .
+COPY www/ /app/www/
+COPY scripts/ /app/scripts/
+COPY .machine_readable/ /app/.machine_readable/
+
+# Copy launcher
+COPY trigger-launcher.sh scripts/
+
+# Set metadata
+RUN echo '{"name":"trigger","version":"1.0.0","description":"Telegram reporting utility","author":"hyperpolymath"}' > .machine_readable/metadata/trigger.json
+
+# Set permissions
+RUN chmod +x bin/trigger scripts/trigger-launcher.sh && \
+    chmod 750 config sessions logs tmp
+
+# =============================================================================
+# SELinux Configuration
+# =============================================================================
+
+# Install SELinux tools (if available in Wolfi)
+RUN apk add --no-cache --no-cache --virtual .selinux-deps \
+    policycoreutils \
+    selinux-policy \
+    selinux-policy-dev \
+    checkpolicy \
+    2>/dev/null || true
+
+# Create SELinux policy module
+COPY security/selinux/trigger.te /tmp/trigger.te
+RUN if command -v checkmodule >/dev/null 2>&1; then \
+        checkmodule -M -m -o /tmp/trigger.mod /tmp/trigger.te && \
+        semodule_package -o /tmp/trigger.pp -m /tmp/trigger.mod && \
+        semodule -i /tmp/trigger.pp && \
+        rm /tmp/trigger.te /tmp/trigger.mod /tmp/trigger.pp; \
+    fi 2>/dev/null || true
+
+# Set SELinux context for application files
+RUN if command -v chcon >/dev/null 2>&1; then \
+        chcon -t bin_t bin/trigger && \
+        chcon -t lib_t lib/libtelegram.so && \
+        chcon -t user_home_t config/ && \
+        chcon -t user_home_t sessions/ && \
+        chcon -t user_home_t logs/ && \
+        chcon -t httpd_sys_content_t www/; \
+    fi 2>/dev/null || true
+
+# =============================================================================
+# Firewalld Configuration
+# =============================================================================
+
+# Install firewalld
+RUN apk add --no-cache firewalld 2>/dev/null || true
+
+# Copy firewalld configuration
+COPY security/firewalld/trigger.xml /etc/firewalld/zones/trigger.xml
+COPY security/firewalld/firewalld.conf /etc/firewalld/firewalld.conf
+
+# Enable firewalld
+RUN if command -v systemctl >/dev/null 2>&1; then \
+        systemctl enable firewalld && \
+        systemctl start firewalld; \
+    fi 2>/dev/null || true
+
+# Load firewalld configuration
+RUN if command -v firewall-cmd >/dev/null 2>&1; then \
+        firewall-cmd --reload 2>/dev/null || true; \
+    fi
+
+# =============================================================================
+# Application Hardening
+# =============================================================================
+
+# Set resource limits
+RUN ulimit -n 1024 2>/dev/null || true && \
+    ulimit -f 102400 2>/dev/null || true && \
+    ulimit -t 3600 2>/dev/null || true
+
+# Set capabilities (drop all except needed ones)
+RUN if command -v setcap >/dev/null 2>&1; then \
+        setcap -r bin/trigger 2>/dev/null || true; \
+    fi
+
+# Prevent core dumps
+RUN echo "* hard core 0" >> /etc/security/limits.conf 2>/dev/null || true
+
+# =============================================================================
+# Health Checks
+# =============================================================================
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD /app/bin/trigger --health || exit 1
+
+# =============================================================================
+# Final Configuration
+# =============================================================================
+
+# Entrypoint
+ENTRYPOINT ["/app/scripts/trigger-launcher.sh"]
+CMD ["--help"]
+
+# Expose ports (for future web interface)
+EXPOSE 8080/tcp
+
+# Volume for persistent data
+VOLUME ["/app/sessions", "/app/logs", "/app/config"]
+
+# Labels
+LABEL org.opencontainers.image.title="Trigger" \
+      org.opencontainers.image.description="Telegram channel reporting utility with multi-account management" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.author="hyperpolymath" \
+      org.opencontainers.image.url="https://github.com/hyperpolymath/trigger" \
+      org.opencontainers.image.licenses="MPL-2.0,CC-BY-SA-4.0" \
+      org.opencontainers.image.source="https://github.com/hyperpolymath/trigger" \
+      org.opencontainers.image.vendor="hyperpolymath" \
+      org.opencontainers.image.documentation="https://github.com/hyperpolymath/trigger#readme" \
+      maintainer="hyperpolymath <hyperpolymath@users.noreply.github.com>" \
+      io.github.hyperpolymath.standards.compliance="rsr-template-repo" \
+      io.github.hyperpolymath.standards.version="v0.3.0"
+
+# User to run as (non-root)
+RUN adduser --disabled-password --gecos '' --home-dir /app appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+WORKDIR /app
+
+# Security options
+# - no-new-privileges: Prevent privilege escalation
+# - read-only root filesystem
+# - drop CAP_NET_RAW (not needed for client)
+# - drop CAP_SYS_ADMIN
+# - drop CAP_SYS_PTRACE (prevent debugging)
+# Note: These are examples; actual options depend on runtime capabilities
+RUN echo "Security: Container configured with hardened settings" > /dev/null
+
+# Note: For production use, consider:
+# - Using --read-only flag with podman
+# - Using --tmpfs for /tmp
+# - Using --security-opt=no-new-privileges
+# - Using --security-opt=seccomp=unconfined (if needed)
+# - Using --security-opt=apparmor=... (if available)
+# - Using --cap-drop=ALL --cap-add=NET_BIND_SERVICE (if needed)

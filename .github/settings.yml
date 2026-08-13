@@ -1,0 +1,224 @@
+# Repository Settings
+# https://docs.github.com/en/communities/using-templates-to-configure-new-repositories/configuring-your-repository-using-the-repository-settings-template
+
+# Basic settings
+repository:
+  # The name of the repository. Changing this will rename the repository
+  name: trigger
+
+  # A short description of the repository that will show up on GitHub
+  description: Telegram channel reporting utility with multi-account management, persistent sessions, and automated workflows
+
+  # A URL with more information about the repository
+  homepage: https://github.com/hyperpolymath/trigger
+
+  # A comma-separated list of topics to set on the repository
+  topics: telegram, reporting, automation, ada, spark, zig, idris2, security, multi-account
+
+  # Either `true` to make the repository private, or `false` to make it public.
+  private: false
+
+  # Either `true` to enable issues for this repository, `false` to disable them.
+  has_issues: true
+
+  # Either `true` to enable the wiki for this repository, `false` to disable it.
+  has_wiki: false
+
+  # Either `true` to enable downloads for this repository, `false` to disable them.
+  has_downloads: true
+
+  # Updates to the default branch will only be allowed if a required status check passes
+  # Set to `true` to require branches to be up to date before merging
+  # https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-required-status-checks
+  require_status_checks_before_merge: true
+
+  # Require branches to be up to date before merging
+  require_up_to_date_before_merge: true
+
+  # Require conversation resolution before merging
+  require_conversation_resolution: true
+
+  # Require signed commits to be pushed
+  require_signed_commits: false
+
+  # Require linear history
+  require_linear_history: false
+
+  # Allow squash merging
+  allow_squash_merge: true
+
+  # Allow merge committing
+  allow_merge_commit: true
+
+  # Allow rebase merging
+  allow_rebase_merge: true
+
+  # Allow auto-merge
+  allow_auto_merge: true
+
+  # Delete head branches when pulls are merged
+  delete_head_branch_on_merge: true
+
+  # Allow updates to pull request branches that update the target branch
+  allow_update_branch: true
+
+  # Default branch name
+  default_branch: main
+
+# Branch protection settings
+branch_protection:
+  main:
+    required_status_checks:
+      strict: true
+      contexts: []
+
+    enforce_admins: true
+
+    required_pull_request_reviews:
+      dismiss_stale_reviews: true
+      require_code_owner_reviews: true
+      required_approving_review_count: 1
+
+    required_signatures: false
+
+    restrictions: null
+
+# Collaborators
+collaborators: []
+
+# Teams
+teams: []
+
+# Labels
+labels:
+  - name: "Ada/SPARK"
+    color: "#1e88e5"
+    description: "Related to Ada/SPARK code"
+
+  - name: "Zig"
+    color: "#ff6f00"
+    description: "Related to Zig FFI code"
+
+  - name: "Idris2"
+    color: "#e91e63"
+    description: "Related to Idris2 API code"
+
+  - name: "bug"
+    color: "#d73a4a"
+    description: "Something isn't working"
+
+  - name: "enhancement"
+    color: "#a2eeef"
+    description: "New feature or request"
+
+  - name: "documentation"
+    color: "#0075ca"
+    description: "Improvements or additions to documentation"
+
+  - name: "good first issue"
+    color: "#7057ff"
+    description: "Good for newcomers"
+
+  - name: "help wanted"
+    color: "#008672"
+    description: "Extra attention is needed"
+
+  - name: "question"
+    color: "#d876e3"
+    description: "Further information is requested"
+
+  - name: "security"
+    color: "#ee0701"
+    description: "Security-related issue"
+
+  - name: "CI/CD"
+    color: "#005cc5"
+    description: "Continuous integration and deployment"
+
+  - name: "RSR-compliance"
+    color: "#6f42c1"
+    description: "RSR template compliance"
+
+  - name: "performance"
+    color: "#006b75"
+    description: "Performance-related"
+
+  - name: "refactor"
+    color: "#fbcca0"
+    description: "Code refactoring needed"
+
+  - name: "breaking"
+    color: "#ff4444"
+    description: "Breaking change"
+
+  - name: "dependencies"
+    color: "#0366d6"
+    description: "Dependency updates"
+
+# Milestones
+milestones:
+  - title: "RSR Compliance"
+    state: open
+    description: "Achieve full RSR template compliance"
+
+  - title: "v1.1.0"
+    state: open
+    description: "First stable release"
+
+  - title: "v1.0.0"
+    state: closed
+    description: "Initial release"
+
+# Auto-labeling
+# https://github.com/marketplace/actions/labeler
+labels_from_package:
+  - "Ada/**" -> "Ada/SPARK"
+  - "Zig/**" -> "Zig"
+  - "Idris/**" -> "Idris2"
+  - "src/**" -> "Ada/SPARK"
+  - "ffi/zig/**" -> "Zig"
+  - "ffi/idris2/**" -> "Idris2"
+  - "**.adoc" -> "documentation"
+  - ".github/workflows/**" -> "CI/CD"
+
+# Code scanning
+code_scanning:
+  enabled: true
+
+# Secret scanning
+secret_scanning:
+  enabled: true
+
+# Dependency graph
+dependency_graph:
+  enabled: true
+
+# Discussions
+# https://docs.github.com/en/communities/managing-discussions-for-your-community/configuring-discussions
+# 
+discussions:
+  enabled: true
+  category_a:
+    name: "General"
+    emoji: "💬"
+    description: "General discussion about Trigger"
+
+  category_b:
+    name: "Help"
+    emoji: "❓"
+    description: "Get help using Trigger"
+
+  category_c:
+    name: "Feature Requests"
+    emoji: "🚀"
+    description: "Request new features"
+
+  category_d:
+    name: "Development"
+    emoji: "🔧"
+    description: "Development-related discussions"
+
+  category_e:
+    name: "RSR Compliance"
+    emoji: "📋"
+    description: "RSR template compliance discussions"

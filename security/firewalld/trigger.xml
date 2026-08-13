@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Firewalld Zone Configuration for Trigger Application
+     
+     This zone defines network access rules for the Trigger
+     Telegram reporting utility.
+     
+     Author: hyperpolymath
+     Version: 1.0.0
+     
+     Default: DENY all incoming, ALLOW all outgoing
+     Only explicitly allowed ports are opened
+     -->
+
+<zone target="DEFAULT" version="1.0">
+    <!-- Zone name: trigger -->
+    <short>Trigger</short>
+    <description>Firewall rules for Trigger Telegram reporting utility. Default deny incoming, allow outgoing except for specific restrictions.</description>
+
+    <!-- ======================================================================== -->
+    <!-- ICMP -->
+    <!-- ======================================================================== -->
+    
+    <!-- Allow ICMP for diagnostics (ping) -->
+    <icmp-block-inversion/>
+    <icmp-type name="echo-request"/>
+    <icmp-type name="echo-reply"/>
+    <icmp-type name="destination-unreachable"/>
+    <icmp-type name="time-exceeded"/>
+
+    <!-- ======================================================================== -->
+    <!-- Services -->
+    <!-- ======================================================================== -->
+    
+    <!-- No incoming services by default - Trigger is a client, not a server -->
+    <!-- All incoming connections are denied by default -->
+
+    <!-- ======================================================================== -->
+    <!-- Ports -->
+    <!-- ======================================================================== -->
+    
+    <!-- No incoming ports opened by default -->
+
+    <!-- ======================================================================== -->
+    <!-- Protocols -->
+    <!-- ======================================================================== -->
+    
+    <!-- No specific protocol restrictions -->
+
+    <!-- ======================================================================== -->
+    <!-- Masquerade -->
+    <!-- ======================================================================== -->
+    
+    <!-- No masquerade - Trigger is a client -->
+
+    <!-- ======================================================================== -->
+    <!-- Forward -->
+    <!-- ======================================================================== -->
+    
+    <!-- No forwarding -->
+
+    <!-- ======================================================================== -->
+    <!-- Source Ports -->
+    <!-- ======================================================================== -->
+    
+    <!-- No source port restrictions -->
+
+    <!-- ======================================================================== -->
+    <!-- Rich Rules -->
+    <!-- ======================================================================== -->
+    
+    <!-- Deny all incoming connections by default -->
+    <rule family="ipv4">
+        <source address="0.0.0.0/0"/>
+        <reject type="icmp-host-prohibited"/>
+    </rule>
+    <rule family="ipv6">
+        <source address="::/0"/>
+        <reject type="icmp6-addr-unreachable"/>
+    </rule>
+
+    <!-- Allow outgoing connections to Telegram API -->
+    <!-- Telegram uses ports 80, 443, and 8080-8089 for MTProto -->
+    
+    <!-- Allow HTTP/HTTPS for API access -->
+    <rule family="ipv4">
+        <destination address="149.154.167.40/32" port="80" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.40/32" port="443" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.44/32" port="80" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.44/32" port="443" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.50/32" port="80" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.50/32" port="443" protocol="tcp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow MTProto ports (8080-8089) -->
+    <rule family="ipv4">
+        <destination address="149.154.167.40/32" port="8080-8089" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.44/32" port="8080-8089" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination address="149.154.167.50/32" port="8080-8089" protocol="tcp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow IPv6 connections to Telegram -->
+    <rule family="ipv6">
+        <destination address="2001:067c:0408:8000::/56" port="80" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination address="2001:067c:0408:8000::/56" port="443" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination address="2001:067c:0408:8000::/56" port="8080-8089" protocol="tcp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow DNS (port 53) for domain resolution -->
+    <rule family="ipv4">
+        <destination port="53" protocol="udp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination port="53" protocol="udp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow NTP (port 123) for time synchronization -->
+    <rule family="ipv4">
+        <destination port="123" protocol="udp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination port="123" protocol="udp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow HTTP/HTTPS for proxy and web access -->
+    <rule family="ipv4">
+        <destination port="80" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination port="443" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination port="80" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination port="443" protocol="tcp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow SOCKS5 proxy (default port 1080) -->
+    <rule family="ipv4">
+        <destination port="1080" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <destination port="1080" protocol="tcp"/>
+        <accept/>
+    </rule>
+
+    <!-- Allow HTTP proxy (default port 8080, 3128, 8888) -->
+    <rule family="ipv4">
+        <destination port="3128" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination port="8080" protocol="tcp"/>
+        <accept/>
+    </rule>
+    <rule family="ipv4">
+        <destination port="8888" protocol="tcp"/>
+        <accept/>
+    </rule>
+
+    <!-- ======================================================================== -->
+    <!-- Rate Limiting -->
+    <!-- ======================================================================== -->
+    
+    <!-- Rate limit outgoing connections to prevent abuse -->
+    <!-- Limit to 10 new connections per second per IP -->
+    <rule family="ipv4">
+        <source address="0.0.0.0/0"/>
+        <limit value="10/s"/>
+        <accept/>
+    </rule>
+    <rule family="ipv6">
+        <source address="::/0"/>
+        <limit value="10/s"/>
+        <accept/>
+    </rule>
+
+    <!-- ======================================================================== -->
+    <!-- Logging -->
+    <!-- ======================================================================== -->
+    
+    <!-- Log all denied connections -->
+    <rule family="ipv4">
+        <source address="0.0.0.0/0"/>
+        <log prefix="TRIGGER-DENY-IPv4" level="notice"/>
+        <reject type="icmp-host-prohibited"/>
+    </rule>
+    <rule family="ipv6">
+        <source address="::/0"/>
+        <log prefix="TRIGGER-DENY-IPv6" level="notice"/>
+        <reject type="icmp6-addr-unreachable"/>
+    </rule>
+
+</zone>

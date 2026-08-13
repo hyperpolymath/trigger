@@ -1,0 +1,29 @@
+AI Policy for Trigger Project
+==============================
+
+This project permits the use of AI tools for development purposes under the
+following conditions:
+
+1. All AI-generated code must be reviewed by a human maintainer
+2. AI-generated code must include proper attribution
+3. AI tools may not be used for security-critical components without formal verification
+4. AI-generated content is subject to the same licensing as the rest of the project
+5. Use of AI tools must be disclosed in commit messages when significant
+
+Permitted AI Tools:
+- Code completion and suggestion tools
+- Documentation generation
+- Test case generation
+- Code review assistance
+
+Prohibited AI Uses:
+- Autonomous commits to main branch
+- Security-sensitive code generation without review
+- License text generation
+- Legal or policy document generation
+
+AI-generated contributions to this project are welcome but must follow the
+same standards as human-generated contributions.
+
+Last Updated: 2026-08-13
+Project: https://github.com/hyperpolymath/trigger

@@ -1,6 +1,6 @@
 = Trigger: Telegram Channel Reporting Tool
-:description: Telegram channel reporting utility with multi-account management
-:author: Original by 2nixx (https://t.me/NetworkCriminals[NetworkCriminals])
+:description: Telegram channel reporting utility with multi-account management, persistent sessions, and automated workflows
+:author: hyperpolymath
 :revdate: 2026-08-13
 :revnumber: 1.0.0
 :language: en
@@ -13,25 +13,18 @@
 
 *Trigger* is a social media reporting utility featuring multi-account management, 
 persistent sessions, proxy support, configurable reporting options, automatic 
-FloodWait handling, and interactive TUI designed for efficient account and reporting 
+FloodWait handling, and an interactive TUI designed for efficient account and reporting 
 workflow management and automation.
 
-This is an Ada/SPARK rewrite of the original *Ripper* tool by *2nixx* (Telegram: 
-https://t.me/NetworkCriminals[@NetworkCriminals]).
+This is an Ada/SPARK implementation with Zig FFI bindings and Idris2 API layer.
 
 === Original Author Acknowledgement
 
 [.acknowledgement]
-This project is derived from *Ripper* by *2nixx* (Telegram: https://t.me/NetworkCriminals[@NetworkCriminals]).
+This project implements functionality originally designed in *Ripper* by *2nixx* 
+(Telegram: https://t.me/NetworkCriminals[@NetworkCriminals]).
 
-The original MIT-licensed code has been rewritten in Ada/SPARK to provide:
-
-* Formal verification capabilities (SPARK)
-* Strong typing for session management
-* Safety-critical guarantees for multi-account operations
-* Better alignment with hyperpolymath standards
-
-All credit for the original design and concept goes to 2nixx and the NetworkCriminals community.
+The original concept and feature set are acknowledged with gratitude.
 
 == Features
 
@@ -39,10 +32,14 @@ All credit for the original design and concept goes to 2nixx and the NetworkCrim
 * Session-based authentication with persistent login
 * Optional AES session encryption
 * Sequential reporting using all active accounts
-* Interactive terminal menu
+* Interactive terminal menu (ADI TUI)
+* Comprehensive CLI with extensive flags and high arity
 * Proxy support (SOCKS5/HTTP)
 * Automatic FloodWait handling with smart retry
 * Configurable report reason (spam, violence, pornography, etc.)
+* Self-diagnostics and health checks
+* Self-healing capabilities
+* Fault-tolerant operation
 
 == Architecture
 
@@ -52,18 +49,18 @@ This implementation uses:
 * *Zig* for FFI bindings to Telegram API via unified-hexadeca-api
 * *Idris2* for API layer abstractions where applicable
 
-=== License
+== License
 
 This repository uses a dual-licensing structure:
 
 * *Code*: Mozilla Public License 2.0 (MPL-2.0) - see link:LICENSE[LICENSE] file
 * *Documentation*: Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA-4.0) - see link:LICENSES/CC-BY-SA-4.0.txt[LICENSES/CC-BY-SA-4.0.txt]
 
-=== Requirements
+== Requirements
 
 * Ada/SPARK compiler (GNAT Community Edition or later)
 * Zig compiler (for FFI bindings)
-* Idris2 compiler (for API layer, if used)
+* Idris2 compiler (for API layer, optional)
 * Telegram API credentials (`api_id` and `api_hash`)
 * Valid Telegram account(s) with phone number
 
@@ -87,39 +84,110 @@ This repository uses a dual-licensing structure:
    alr build
    ----
 
+. Or use Justfile:
+   ----
+   just build
+   ----
+
 == Usage
 
-Run the compiled binary:
+=== CLI Mode
+
+Trigger provides a comprehensive CLI with extensive options:
 
 ----
-./obj/trigger
+trigger --help
+trigger --man
+trigger --version
+trigger --diagnose
+trigger --self-heal
+trigger --config file.json
+trigger --api-id 12345 --api-hash abcdef
+trigger --session-dir ./sessions
+trigger --proxy socks5://127.0.0.1:1080
+trigger --log-level debug
+trigger --no-color
+trigger --account +1234567890
+trigger --channel test_channel
+trigger --report-count 5
+trigger --delay 2.0
+trigger --report-reason spam
+trigger --all-accounts
+trigger --encrypt-sessions
+trigger --salt my_secret_salt
 ----
+
+For full CLI documentation, see:
+
+----
+trigger --help      # Show help
+trigger --man       # Show man page
+trigger help        # Interactive help (ADI TUI)
+man trigger         # System man page (if installed)
+----
+
+=== ADI TUI Mode
+
+Run without arguments for interactive mode:
+
+----
+./trigger
+# or
+just run
+----
+
+The ADI TUI provides:
+
+* Full-featured text-based interface
+* Color-coded output
+* Keyboard navigation
+* Session management
+* Real-time reporting
+* Statistics display
+* Error handling with recovery options
 
 === Main Menu
 
 ----
   ╔═══════════════════════════════════════════════════════════╗
-  ║                    Trigger - Telegram Reporting Tool        ║
-  ║              Original concept by T.me/NetworkCriminals      ║
+  ║                   Trigger - Telegram Reporting Tool            ║
   ╠═══════════════════════════════════════════════════════════╣
   ║  1. Add Account                                           ║
   ║  2. List Accounts                                         ║
   ║  3. Remove Account                                        ║
   ║  4. Start Reporting                                       ║
   ║  5. Set API Credentials                                   ║
-  ║  6. Exit                                                 ║
+  ║  6. Configuration                                        ║
+  ║  7. Diagnostics                                           ║
+  ║  8. Exit                                                 ║
   ╚═══════════════════════════════════════════════════════════╝
 ----
+
+=== Configuration Menu
+
+Access configuration through:
+
+* CLI: `trigger --config` or `trigger -c`
+* ADI TUI: Option 6 from main menu
+
+Configuration options include:
+
+* Telegram API credentials
+* Session directory
+* Proxy settings
+* Encryption settings
+* Logging preferences
+* Default reporting options
 
 === Add Account
 
 Select option `1` and provide:
 
-* Phone number with country code (e.g., `+989123456789`)
+* Phone number with country code (e.g., `+1234567890`)
 * API ID and API hash (from https://my.telegram.org/apps)
 * Verification code sent by Telegram
 
-Session files are stored in the `sessions/` folder.
+Session files are stored in the configured session directory.
 
 === Start Reporting
 
@@ -131,6 +199,166 @@ Select option `4` and provide:
 * Report reason (default: `spam`)
 
 The tool processes all active accounts sequentially.
+
+== Self-Diagnostics
+
+Trigger includes comprehensive self-diagnostic capabilities:
+
+----
+trigger --diagnose        # Run all diagnostics
+trigger --check-deps      # Check dependencies
+trigger --check-config    # Validate configuration
+trigger --check-sessions  # Verify session files
+trigger --health          # Health check
+----
+
+Each diagnostic provides:
+
+* Status (OK/WARNING/ERROR)
+* Detailed descriptions
+* Remediation suggestions
+* Automatic fixes where possible (self-healing)
+
+== Self-Healing
+
+Trigger can automatically fix common issues:
+
+----
+trigger --self-heal        # Attempt to fix all fixable issues
+trigger --fix-config      # Fix configuration issues
+trigger --fix-permissions  # Fix file permissions
+trigger --fix-sessions    # Repair session files
+----
+
+Self-healing features:
+
+* Automatic session file repair
+* Configuration validation and correction
+* Dependency checking with installation hints
+* Permission fixing for session directory
+* Missing file creation with defaults
+
+== Fault-Tolerance
+
+Trigger is designed for fault-tolerant operation:
+
+* Automatic retry on FloodWait errors
+* Session recovery after failures
+* Graceful degradation when features unavailable
+* Comprehensive error logging
+* Safe state persistence
+* Network error handling with exponential backoff
+
+== CLI Reference
+
+=== Command Line Options
+
+[cols="1,1,3", options="header"]
+|===
+|Short|Long|Description
+
+|-h|--help|Show help message and exit
+| |--man|Show man page and exit
+|-v|--version|Show version information and exit
+| |--license|Show license information and exit
+
+|-c|--config FILE|Use specified configuration file
+| |--save-config|Save current configuration to file
+| |--reset-config|Reset configuration to defaults
+
+|-a|--api-id ID|Set Telegram API ID
+| |--api-hash HASH|Set Telegram API hash
+| |--set-credentials|Set API credentials interactively
+
+|-s|--session-dir DIR|Set session directory
+| |--list-sessions|List all session files
+| |--clean-sessions|Remove invalid session files
+
+|-p|--proxy URL|Set proxy URL (socks5:// or http://)
+| |--no-proxy|Disable proxy
+
+|-l|--log-level LEVEL|Set log level (debug, info, warning, error)
+| |--log-file FILE|Log to file instead of stdout
+| |--no-color|Disable colored output
+| |--quiet|Suppress all output except errors
+
+|-A|--account PHONE|Use specific account
+| |--all-accounts|Use all active accounts
+| |--list-accounts|List all accounts
+| |--add-account|Add a new account
+| |--remove-account PHONE|Remove an account
+
+|-C|--channel CHANNEL|Set target channel
+| |--list-channels|List recent channels
+
+|-n|--report-count N|Number of messages to report (default: 3)
+| |--delay SECONDS|Delay between reports (default: 2.0)
+| |--reason REASON|Report reason (spam, violence, pornography, etc.)
+| |--dry-run|Show what would be reported without reporting
+
+|-e|--encrypt|Enable session encryption
+| |--decrypt|Decrypt session files
+| |--salt SALT|Encryption salt
+| |--password PASS|Encryption password
+
+|-d|--diagnose|Run self-diagnostics
+| |--self-heal|Attempt self-healing
+| |--health|Run health check
+|===
+
+=== Examples
+
+----
+# Run diagnostics
+trigger --diagnose
+
+# Report from all accounts
+trigger --all-accounts --channel spam_channel --report-count 5
+
+# Use specific account with proxy
+trigger -A +1234567890 -p socks5://127.0.0.1:1080 -C spam_channel
+
+# Dry run to see what would be reported
+trigger --dry-run --channel test_channel --report-count 10
+
+# Encrypted sessions
+trigger --encrypt --salt my_salt --password my_pass --add-account
+
+# Interactive ADI TUI
+trigger
+----
+
+== Exit Codes
+
+[cols="1,2", options="header"]
+|===
+|Code|Description
+
+|0|Success
+|1|General error
+|2|Configuration error
+|3|Authentication error
+|4|Network error
+|5|API error
+|6|Session error
+|7|Validation error
+|8|Dependency missing
+|===
+
+== Environment Variables
+
+[cols="1,2,1", options="header"]
+|===
+|Variable|Description|Default
+
+|TRIGGER_CONFIG|Configuration file path|./config.json
+|TRIGGER_SESSION_DIR|Session directory|./sessions
+|TRIGGER_LOG_LEVEL|Log level|info
+|TRIGGER_API_ID|Telegram API ID|(none)
+|TRIGGER_API_HASH|Telegram API hash|(none)
+|TRIGGER_PROXY|Proxy URL|(none)
+|NO_COLOR|Disable colors|(none, set to any value)
+|===
 
 == Dependencies
 
@@ -148,15 +376,45 @@ This tool automates the reporting process.
 === Will my account get banned?
 
 Using this tool responsibly should not result in a ban. Telegram may impose temporary 
-`FloodWait` restrictions, which the tool handles automatically.
+`FloodWait` restrictions, which the tool handles automatically with exponential backoff.
 
 === Can I use multiple accounts?
 
 Yes. Add multiple accounts and the tool will use all active accounts sequentially.
+The CLI supports `--all-accounts` or you can specify individual accounts with `-A/--account`.
 
 === How do I get `api_id` and `api_hash`?
 
 Visit https://my.telegram.org/apps and create a new application.
+
+=== Can I use this in scripts/workflows?
+
+Yes. The CLI is designed for workflow integration. Use:
+
+* `--dry-run` to test before actual reporting
+* `--quiet` to suppress output in scripts
+* Exit codes to check success/failure
+* `--config` to use specific configuration files
+
+=== How does fault-tolerance work?
+
+Trigger implements several fault-tolerance mechanisms:
+
+* Automatic retry with exponential backoff for rate-limited operations
+* Session state persistence for recovery after crashes
+* Network error handling with reconnection logic
+* Partial failure continuation (continues with next account on failure)
+* Comprehensive error logging for post-mortem analysis
+
+=== How does self-healing work?
+
+Self-healing features include:
+
+* Automatic session file validation and repair
+* Configuration file syntax checking and correction
+* Missing directory creation
+* Permission fixing for session files
+* Automatic dependency detection and hints
 
 == Contributing
 
@@ -167,7 +425,7 @@ See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] for contribution guidelines.
 [.disclaimer]
 *Important*: This project is developed for educational and research purposes only. 
 It is intended to demonstrate the technical aspects of Telegram's reporting mechanism 
-and multi-account automation using Ada/SPARK.
+and multi-account automation using Ada/SPARK, Zig, and Idris2.
 
 The author does not endorse or encourage any misuse of this tool, including but not limited to:
 
@@ -179,10 +437,11 @@ Users are solely responsible for their actions and must ensure compliance with a
 applicable laws and regulations. The author assumes no liability for any consequences 
 arising from the use of this software.
 
+Original concept and design acknowledged to Ripper by 2nixx (T.me/NetworkCriminals).
+
 == See Also
 
-* Original Ripper: https://github.com/2nixx/Ripper
-* NetworkCriminals Telegram: https://t.me/NetworkCriminals
+* hyperpolymath: https://github.com/hyperpolymath
 * Ada/SPARK: https://www.adacore.com
 * Zig: https://ziglang.org
 * Idris2: https://idris-lang.org

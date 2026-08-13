@@ -1,0 +1,23 @@
+# TLSA (DANE) Record Placeholder
+# 
+# This file would contain TLSA records for DANE (DNS-based Authentication of 
+# Named Entities) to enable TLS certificate verification via DNS.
+# 
+# Format: <usage> <selector> <matching-type> <certificate-association-data>
+#
+# Example:
+# 3 1 1 <SHA-256 hash of SPKI from certificate>
+# 2 1 1 <SHA-256 hash of full certificate>
+#
+# For this repository (static hosting on GitHub Pages):
+# GitHub uses their own certificates, so DANE would not be applicable.
+#
+# For a live Trigger service, this would contain:
+# Usage 3 (DANE-EE) - End Entity certificate
+# Selector 1 (SPKI) - Subject Public Key Info
+# Matching Type 1 (SHA-256) - SHA-256 hash
+#
+# NOTE: TLSA records are NOW DEFINED in security/bind9/trigger.zone
+# This file is kept for compatibility. The authoritative TLSA records 
+# should be in DNS, not in .well-known/. See security/bind9/trigger.zone
+# for the actual DNS records.

@@ -1,0 +1,425 @@
+//  Trigger Manual Page
+//  
+//  This file is used to generate a man page for the trigger command.
+//  
+//  Author: hyperpolymath
+//  
+//  To generate the man page:
+//    asciidoctor -b manpage -D docs trigger-man.adoc -o docs/trigger.1
+
+= trigger(1)
+:doctype: manpage
+:man source: Trigger 1.0.0
+:man version: 1.0.0
+:man manual: Trigger User Manual
+
+== NAME
+trigger - Telegram channel reporting utility with multi-account management
+
+== SYNOPSIS
+
+*trigger* [OPTIONS] [COMMAND]
+
+== DESCRIPTION
+
+*trigger* is a Telegram channel reporting utility featuring multi-account management, 
+persistent sessions, proxy support, configurable reporting options, automatic 
+FloodWait handling, and an interactive TUI.
+
+This implementation uses Ada/SPARK for the core application, Zig for FFI bindings 
+to Telegram API, and Idris2 for API layer abstractions.
+
+== ORIGINAL ATTRIBUTION
+
+This project implements functionality originally designed in *Ripper* by *2nixx* 
+(Telegram: https://t.me/NetworkCriminals). The original concept and feature set 
+are acknowledged with gratitude.
+
+== OPTIONS
+
+=== Informational Options
+
+*-h, --help*:
+  Show this help message and exit.
+
+*--man*:
+  Display the full man page and exit.
+
+*-v, --version*:
+  Show version information and exit.
+
+*--license*:
+  Show license information and exit.
+
+=== Configuration Options
+
+*-c FILE, --config FILE*:
+  Use the specified configuration file instead of the default.
+
+*--save-config*:
+  Save the current configuration to the specified file.
+
+*--reset-config*:
+  Reset configuration to default values.
+
+=== API Credentials Options
+
+*-a ID, --api-id ID*:
+  Set the Telegram API ID.
+
+*--api-hash HASH*:
+  Set the Telegram API hash.
+
+*--set-credentials*:
+  Set API credentials interactively.
+
+=== Session Options
+
+*-s DIR, --session-dir DIR*:
+  Set the directory for session files.
+
+*--list-sessions*:
+  List all session files.
+
+*--clean-sessions*:
+  Remove invalid or corrupted session files.
+
+=== Proxy Options
+
+*-p URL, --proxy URL*:
+  Set the proxy URL (socks5:// or http://).
+
+*--no-proxy*:
+  Disable proxy usage.
+
+=== Logging Options
+
+*-l LEVEL, --log-level LEVEL*:
+  Set the log level. Valid values: debug, info, warning, error. Default: info.
+
+*--log-file FILE*:
+  Log output to the specified file instead of stdout.
+
+*--no-color*:
+  Disable colored output.
+
+*--quiet*:
+  Suppress all output except errors.
+
+=== Account Options
+
+*-A PHONE, --account PHONE*:
+  Use the specified account (phone number).
+
+*--all-accounts*:
+  Use all active accounts.
+
+*--list-accounts*:
+  List all configured accounts.
+
+*--add-account*:
+  Add a new account interactively.
+
+*--remove-account PHONE*:
+  Remove the specified account.
+
+=== Reporting Options
+
+*-C CHANNEL, --channel CHANNEL*:
+  Set the target channel for reporting.
+
+*--list-channels*:
+  List recent channels.
+
+*-n N, --report-count N*:
+  Number of messages to report. Default: 3.
+
+*--delay SECONDS*:
+  Delay between reports in seconds. Default: 2.0.
+
+*--reason REASON*:
+  Report reason. Valid values: spam, violence, pornography, copyright, 
+  privacy, scam, other. Default: spam.
+
+*--dry-run*:
+  Show what would be reported without actually reporting.
+
+=== Encryption Options
+
+*-e, --encrypt*:
+  Enable session encryption.
+
+*--decrypt*:
+  Decrypt session files.
+
+*--salt SALT*:
+  Set the encryption salt.
+
+*--password PASS*:
+  Set the encryption password.
+
+=== Diagnostic and Healing Options
+
+*--diagnose*:
+  Run comprehensive self-diagnostics.
+
+*--self-heal*:
+  Attempt to automatically fix detected issues.
+
+*--check-deps*:
+  Check for required dependencies.
+
+*--check-config*:
+  Validate configuration files.
+
+*--check-sessions*:
+  Verify session files.
+
+*--health*:
+  Run a quick health check.
+
+*--fix-config*:
+  Fix configuration file issues.
+
+*--fix-permissions*:
+  Fix file and directory permissions.
+
+*--fix-sessions*:
+  Repair corrupted session files.
+
+== COMMANDS
+
+Without any arguments or with *--tui* flag, *trigger* launches the ADI TUI 
+(Advanced Dialog Interface) for interactive use.
+
+== EXIT CODES
+
+[cols="1,2", options="header"]
+|===
+|Code|Description
+
+|0|Success
+|1|General error
+|2|Configuration error
+|3|Authentication error
+|4|Network error
+|5|API error
+|6|Session error
+|7|Validation error
+|8|Dependency missing
+|===
+
+== ENVIRONMENT VARIABLES
+
+*TRIGGER_CONFIG*:
+  Path to the configuration file. Default: ./config.json
+
+*TRIGGER_SESSION_DIR*:
+  Directory for session files. Default: ./sessions
+
+*TRIGGER_LOG_LEVEL*:
+  Log level. Valid values: debug, info, warning, error. Default: info
+
+*TRIGGER_API_ID*:
+  Telegram API ID.
+
+*TRIGGER_API_HASH*:
+  Telegram API hash.
+
+*TRIGGER_PROXY*:
+  Proxy URL.
+
+*NO_COLOR*:
+  If set to any value, disables colored output.
+
+== FILES
+
+*~/.config/trigger/config.json*:
+  User-specific configuration file.
+
+*./config.json*:
+  Local configuration file.
+
+*./sessions/*:
+  Session files for authenticated accounts.
+
+*./trigger.log*:
+  Default log file.
+
+== EXAMPLES
+
+=== Basic Usage
+
+Launch the interactive TUI:
+----
+trigger
+----
+
+Show help:
+----
+trigger --help
+----
+
+Show version:
+----
+trigger --version
+----
+
+=== Configuration
+
+Set API credentials:
+----
+trigger --api-id 12345 --api-hash abcdef123456 --save-config
+----
+
+Or interactively:
+----
+trigger --set-credentials
+----
+
+=== Reporting
+
+Dry run (preview what would be reported):
+----
+trigger --dry-run --channel spam_channel --report-count 5
+----
+
+Report from all accounts:
+----
+trigger --all-accounts --channel spam_channel --report-count 5
+----
+
+Report with specific account and proxy:
+----
+trigger -A +1234567890 -p socks5://127.0.0.1:1080 -C spam_channel
+----
+
+Report with custom settings:
+----
+trigger --channel test_channel \
+       --report-count 10 \
+       --delay 3.0 \
+       --reason spam \
+       --all-accounts
+----
+
+=== Session Management
+
+List sessions:
+----
+trigger --list-sessions
+----
+
+Clean invalid sessions:
+----
+trigger --clean-sessions
+----
+
+=== Diagnostics
+
+Run full diagnostics:
+----
+trigger --diagnose
+----
+
+Run health check:
+----
+trigger --health
+----
+
+Attempt self-healing:
+----
+trigger --self-heal
+----
+
+=== Encryption
+
+Encrypt all sessions:
+----
+trigger --encrypt --salt my_salt --password my_pass --all-accounts
+----
+
+== DIAGNOSTICS
+
+Trigger includes comprehensive self-diagnostic capabilities that check:
+
+* GNAT compiler availability
+* Zig compiler availability
+* Idris2 compiler availability (optional)
+* Configuration file validity
+* Session directory existence and permissions
+* Session file integrity
+* Telegram API connectivity
+* Disk space availability
+
+Each diagnostic provides:
+
+* Status (OK, WARNING, ERROR)
+* Description of what was checked
+* Detailed findings
+* Remediation suggestions
+* Whether automatic fix is available
+
+== SELF-HEALING
+
+Trigger can automatically fix common issues:
+
+* Create missing configuration file
+* Create missing session directory
+* Fix file permissions
+* Repair corrupted session files
+* Validate configuration values
+
+== FAULT-TOLERANCE
+
+Trigger is designed for fault-tolerant operation:
+
+* Automatic retry with exponential backoff for rate-limited operations
+* Session state persistence for recovery after crashes
+* Network error handling with reconnection logic
+* Partial failure continuation (continues with next account on failure)
+* Comprehensive error logging for post-mortem analysis
+* Circuit breaker pattern to prevent repeated failures
+
+== SECURITY
+
+* Session data can be encrypted using AES-256-CFB
+* API credentials are stored securely in configuration files
+* Phone numbers are stored securely
+* All sensitive data can be optionally encrypted
+* Session files use restricted permissions
+
+== REPORTING BUGS
+
+Report bugs at: https://github.com/hyperpolymath/trigger/issues
+
+Include the following information:
+
+* Version of Trigger
+* Version of compilers (GNAT, Zig, Idris2)
+* Operating system
+* Steps to reproduce
+* Expected behavior
+* Actual behavior
+* Relevant log output
+
+== COPYRIGHT
+
+Code is licensed under Mozilla Public License 2.0 (MPL-2.0).
+
+Documentation is licensed under Creative Commons Attribution-ShareAlike 4.0 
+International (CC-BY-SA-4.0).
+
+See LICENSE and LICENSES/ for full license texts.
+
+== SEE ALSO
+
+*Ripper* (original concept): https://github.com/2nixx/Ripper
+
+*Ada/SPARK*: https://www.adacore.com
+
+*Zig*: https://ziglang.org
+
+*Idris2*: https://idris-lang.org
+
+*Telegram API*: https://core.telegram.org/api

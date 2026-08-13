@@ -1,0 +1,650 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Trigger: Comprehensive Improvement Suggestions
+:toc: preamble
+:toclevels: 4
+
+This document provides comprehensive improvement suggestions for the Trigger project
+across all quality dimensions.
+
+== Overview
+
+The Trigger repository has been upgraded to a fully RSR-template-repo compliant
+Ada/SPARK implementation with enterprise-grade infrastructure. This document
+outlines suggestions for further improvements across:
+
+* Dependability (Reliability, Availability, Maintainability)
+* Security
+* Accessibility
+* Usability
+* Functionality
+* Performance
+
+== Dependability
+
+=== Reliability
+
+==== System Architecture
+
+* **Circuit Breaker Pattern**: Currently documented in trigger-man.adoc but not implemented.
+  Suggest implementing a proper circuit breaker for Telegram API calls:
+  - Track failure counts per API endpoint
+  - Open circuit after N consecutive failures
+  - Half-open state for testing recovery
+  - Configurable timeout before retry
+
+* **Exponential Backoff**: Implement proper exponential backoff with jitter:
+  - Base delay: 1 second
+  - Maximum delay: 60 seconds
+  - Multiplier: 2x with ±25% jitter
+  - Separate configuration per API endpoint type
+
+* **Retry Limits**: Add configurable retry limits:
+  - Maximum retry attempts: 5 (configurable)
+  - Per-operation retry budgets
+  - Global retry rate limiting
+
+==== Session Management
+
+* **Session Persistence**: Implement proper session state persistence:
+  - Atomic save/load of session files
+  - Session validation on load
+  - Automatic session rotation (max age: 30 days)
+  - Session encryption with user-provided keys
+
+* **Session Recovery**: Add session recovery capabilities:
+  - Detect and recover from partial session writes
+  - Session migration for API changes
+  - Session backup before major operations
+
+==== Error Handling
+
+* **Structured Error Codes**: Enhance error code system:
+  - Add error sub-codes for finer granularity
+  - Error code hierarchy (category/subcategory/specific)
+  - Error context propagation through call stack
+
+* **Error Logging**: Improve error logging:
+  - Structured log format (JSON or key-value pairs)
+  - Error correlation IDs for tracing across components
+  - Log rotation with size and time limits
+  - Emergency logging to stderr when file logging fails
+
+* **Graceful Degradation**: Implement graceful degradation:
+  - Reduced functionality mode when dependencies fail
+  - Clear user communication about degraded state
+  - Automatic recovery attempts
+
+=== Availability
+
+==== High Availability Features
+
+* **Health Check Endpoint**: Add a health check endpoint for monitoring:
+  - Check all critical dependencies
+  - Verify Telegram API connectivity
+  - Check session validity
+  - Return structured health status
+
+* **Watchdog Timer**: Implement watchdog timer:
+  - Detect hung operations
+  - Automatic restart of stuck components
+  - Configurable timeout (default: 30 minutes)
+
+* **Redundancy**: Consider adding:
+  - Multiple Telegram API endpoints
+  - Fallback to different connection methods
+  - Parallel account processing for reporting
+
+=== Maintainability
+
+==== Code Quality
+
+* **Static Analysis**: Integrate with:
+  - GNAT static analysis (-gnatwa -gnatwe)
+  - SPARK proof for critical components
+  - Code complexity metrics (cyclomatic, halstead)
+  - Unused code detection
+
+* **Code Review**: Implement:
+  - Required review for all changes
+  - Automated review assignment
+  - Review checklists for different change types
+  - Review time SLA tracking
+
+* **Documentation**: Enhance with:
+  - Architecture Decision Records (ADRs)
+  - Design documents for major components
+  - API documentation for all public interfaces
+  - Change logs for all releases
+
+==== Testing
+
+* **Test Coverage**: Achieve minimum coverage targets:
+  - Unit tests: >90% code coverage
+  - Integration tests: >80% component coverage
+  - System tests: >70% feature coverage
+  - Property-based tests for critical algorithms
+
+* **Test Types**: Add test categories:
+  - Positive tests (happy path)
+  - Negative tests (error conditions)
+  - Edge case tests (boundary conditions)
+  - Performance tests (benchmarks)
+  - Security tests (penetration, fuzzing)
+  - Chaos tests (failure injection)
+
+* **Test Isolation**: Ensure tests are:
+  - Independent of each other
+  - Repeatable
+  - Fast (<1 second each)
+  - Deterministic
+
+==== Deployment
+
+* **Rollback**: Implement proper rollback capabilities:
+  - Versioned releases
+  - Automatic rollback on failure detection
+  - Rollback testing
+
+* **Configuration Management**: Add:
+  - Configuration versioning
+  - Configuration migration
+  - Configuration validation
+  - Configuration rollback
+
+* **Dependency Management**: Implement:
+  - Dependency pinning with SHA verification
+  - Dependency vulnerability scanning
+  - Dependency update testing
+
+== Security
+
+=== Cryptography
+
+==== Current Implementation
+
+The current implementation uses placeholder cryptography with:
+- EdD448 (Edwards-curve Digital Signature Algorithm)
+- Kyber-1024 (Post-quantum Key Encapsulation Mechanism)
+- BLAKE3 (Fast cryptographic hash)
+- SHAKE-512 (Extendable-output hash function)
+
+==== Production Implementation Required
+
+* **EdD448**: Use libsodium or libhydrogen:
+  - libsodium: `crypto_sign_eddsa_ed448_*` functions
+  - libhydrogen: `hydro_sign_*` functions
+  - Implement proper key generation, signing, verification
+  - Add key derivation functions
+
+* **Kyber-1024**: Use liboqs (Open Quantum Safe):
+  - Kyber-1024 for post-quantum KEM
+  - Proper encapsulation and decapsulation
+  - Hybrid encryption (Kyber + AES-256)
+  - Side-channel resistant implementation
+
+* **BLAKE3**: Use official BLAKE3 implementation:
+  - https://github.com/BLAKE3-team/BLAKE3
+  - Implement hashing, key derivation, MAC
+  - Use parallel hashing for large inputs
+
+* **SHAKE-512**: Use SHA-3/Keccak implementation:
+  - From libkeccak or similar
+  - XOF (extendable-output function) support
+  - Proper sponge construction
+
+==== Hybrid Encryption
+
+* **Combined Encryption**: Implement proper hybrid encryption:
+  1. Generate ephemeral Kyber key pair
+  2. Encapsulate to recipient's Kyber public key
+  3. Use shared secret + sender's EdD448 public key as symmetric key
+  4. Encrypt plaintext with AES-256-GCM or ChaCha20-Poly1305
+  5. Sign the ciphertext with EdD448
+  6. Package: encapsulated key || ciphertext || tag || signature
+
+* **Key Management**: Add proper key management:
+  - Key generation with sufficient entropy
+  - Key storage with proper permissions (0600)
+  - Key rotation schedules
+  - Key backup and recovery
+  - Key revocation
+
+=== Authentication
+
+* **Session Security**: Enhance session security:
+  - Session tokens with expiration
+  - Session binding to device/IP
+  - Session invalidation on password change
+  - Session activity monitoring
+
+* **Multi-Factor**: Consider adding MFA:
+  - TOTP support
+  - Hardware token support (FIDO2/U2F)
+  - Recovery codes
+
+* **Credential Storage**: Secure credential storage:
+  - Use OS keychain (Keychain on macOS, Credential Manager on Windows)
+  - Encrypt all stored credentials
+  - Zero credentials in memory when not in use
+  - Secure memory wiping
+
+=== Network Security
+
+* **TLS**: Ensure all connections use TLS:
+  - Certificate validation (no TOFU)
+  - Certificate pinning for critical endpoints
+  - Minimum TLS version: 1.3
+  - Strong cipher suite preference
+
+* **Proxy Security**: Enhance proxy support:
+  - SOCKS5 with authentication
+  - HTTP/HTTPS proxy support
+  - Proxy certificate validation
+  - Proxy connection encryption
+
+* **Tor Support**: Add Tor network support:
+  - Built-in Tor client integration
+  - Tor circuit isolation per account
+  - Tor stream isolation per request
+
+=== Data Security
+
+* **Data at Rest**: Encrypt all sensitive data:
+  - Session files encryption
+  - Configuration file encryption
+  - Log file encryption (optional)
+  - Encryption key hierarchy
+
+* **Data in Transit**: Ensure all data is encrypted:
+  - Telegram API uses MTProto (already encrypted)
+  - All FFI communications encrypted
+  - No plaintext sensitive data on network
+
+* **Data in Memory**: Protect data in memory:
+  - Use secure memory allocators (mlock, mprotect)
+  - Zero sensitive buffers after use
+  - Prevent memory dumps
+  - Prevent core dumps
+
+=== Access Control
+
+* **File Permissions**: Strict file permissions:
+  - Configuration files: 0600
+  - Session files: 0600
+  - Log files: 0640
+  - Binary files: 0755
+  - Directories: 0750
+
+* **User Isolation**: Implement user isolation:
+  - Separate session directories per user
+  - Separate configuration per user
+  - No cross-user data access
+
+* **Privilege Separation**: Run with minimal privileges:
+  - No root/sudo required
+  - Drop privileges if started as root
+  - Use separate UIDs for different components
+
+=== Audit and Monitoring
+
+* **Audit Logging**: Comprehensive audit logging:
+  - All authentication attempts
+  - All configuration changes
+  - All sensitive operations
+  - Immutable audit log
+
+* **Monitoring**: Add monitoring capabilities:
+  - Health check endpoints
+  - Metrics collection (Prometheus compatible)
+  - Alerting on anomalies
+  - Usage statistics (opt-in, anonymized)
+
+* **Anomaly Detection**: Detect and respond to:
+  - Unusual access patterns
+  - Failed authentication spikes
+  - Rapid sequence of operations
+  - Geographic anomalies
+
+== Accessibility
+
+=== User Interface
+
+* **CLI Accessibility**: Ensure CLI is accessible:
+  - All functionality available via CLI
+  - Clear, descriptive error messages
+  - Help text for all commands
+  - Tab completion support
+
+* **TUI Accessibility**: Enhance ADI TUI:
+  - Screen reader support
+  - High contrast mode
+  - Keyboard-only navigation
+  - Adjustable font sizes
+  - Color-blind friendly colors
+
+* **Web Interface**: Consider adding web interface:
+  - Responsive design
+  - WCAG 2.1 AA compliance
+  - Keyboard navigation
+  - ARIA labels
+
+=== Documentation
+
+* **Accessible Documentation**: Ensure all documentation is accessible:
+  - AsciiDoc with proper structure
+  - Semantic markup
+  - Alternative text for images
+  - Clear navigation
+
+* **Multiple Formats**: Provide documentation in:
+  - Plain text
+  - HTML
+  - PDF
+  - EPUB
+  - Man pages
+
+* **Translation**: Support translation:
+  - i18n framework for all user-facing text
+  - Translation memory
+  - Community translation process
+
+=== Internationalization
+
+* **Locale Support**: Full locale support:
+  - Date/time formatting
+  - Number formatting
+  - Currency formatting
+  - Message translation
+
+* **Unicode Support**: Full Unicode support:
+  - UTF-8 everywhere
+  - Proper character encoding
+  - Unicode normalization
+  - Bidirectional text support
+
+== Usability
+
+=== User Experience
+
+* **Onboarding**: Improve new user experience:
+  - Interactive setup wizard
+  - First-run configuration assistant
+  - Example configurations
+  - Getting started guide
+
+* **Configuration**: Make configuration easier:
+  - Configuration file templates
+  - Configuration validation
+  - Configuration examples
+  - Configuration migration
+
+* **Feedback**: Provide clear feedback:
+  - Progress indicators for long operations
+  - Success/failure notifications
+  - Actionable error messages
+  - Suggestions for next steps
+
+=== Command Line Interface
+
+* **CLI Improvements**:
+  - Consistent command naming
+  - Short and long flag options
+  - Flag aliases
+  - Flag completion
+  - Flag documentation
+
+* **Command Structure**: Organize commands:
+  - Main commands (report, session, account)
+  - Subcommands (report spam, report violence, etc.)
+  - Global options (--verbose, --quiet, etc.)
+  - Command-specific options
+
+* **Output Formatting**: Enhance output:
+  - JSON output option
+  - Pretty-printed output
+  - Colorized output (with --no-color option)
+  - Output filtering
+
+=== Interactive Interface
+
+* **TUI Improvements**:
+  - Consistent navigation
+  - Clear menu hierarchy
+  - Context-sensitive help
+  - Keyboard shortcuts
+  - Mouse support (optional)
+
+* **Session Management**: Enhance session management:
+  - Session list with status
+  - Session details view
+  - Session creation wizard
+  - Session deletion confirmation
+
+* **Reporting Workflow**: Streamline reporting:
+  - Step-by-step reporting wizard
+  - Preview before submission
+  - Batch reporting
+  - Reporting history
+
+== Functionality
+
+=== Core Features
+
+* **Multi-Account Management**:
+  - Add/remove/list accounts
+  - Account switching
+  - Per-account configuration
+  - Account groups
+
+* **Session Management**:
+  - Session creation/destruction
+  - Session persistence
+  - Session encryption
+  - Session migration
+
+* **Reporting**:
+  - Multiple report reasons
+  - Batch reporting
+  - Report customization
+  - Report preview (dry-run)
+  - Report history
+  - Report statistics
+
+* **Proxy Support**:
+  - Multiple proxy types (SOCKS5, HTTP, HTTPS)
+  - Proxy authentication
+  - Proxy per account
+  - Proxy health checking
+
+=== Advanced Features
+
+* **Automation**:
+  - Scheduled reporting
+  - Automated retry
+  - Rule-based reporting
+  - Scriptable workflows
+
+* **Integration**:
+  - Webhook support
+  - API for external tools
+  - Plugin system
+  - Event system
+
+* **Monitoring**:
+  - Account activity monitoring
+  - Report success tracking
+  - Performance metrics
+  - Usage analytics (opt-in)
+
+* **Collaboration**:
+  - Shared configurations
+  - Team accounts
+  - Report sharing
+  - Audit trails
+
+=== Extension Points
+
+* **Custom Report Reasons**: Allow customization of report reasons
+* **Custom Actions**: Allow custom actions on events
+* **Custom Filters**: Allow custom message filters
+* **Custom Plugins**: Plugin system for extending functionality
+
+== Performance
+
+=== Efficiency
+
+* **Resource Usage**:
+  - Memory: Target <50MB resident
+  - CPU: Target <5% idle, <20% active
+  - Disk: Target <100MB
+  - Network: Minimize bandwidth usage
+
+* **Optimizations**:
+  - Session caching
+  - Connection pooling
+  - Request batching
+  - Lazy loading
+
+=== Scalability
+
+* **Account Scaling**: Support 100+ accounts:
+  - Efficient session management
+  - Parallel account processing
+  - Account grouping
+  - Resource limits per account
+
+* **Concurrent Operations**:
+  - Concurrent reporting
+  - Parallel session operations
+  - Async I/O
+  - Rate limiting
+
+=== Responsiveness
+
+* **Latency Targets**:
+  - CLI startup: <100ms
+  - TUI startup: <500ms
+  - Report submission: <5s per report
+  - Session creation: <10s
+
+* **Responsiveness**:
+  - CLI: Immediate feedback
+  - TUI: <100ms per keypress
+  - API: <100ms response time
+
+== Specific Recommendations
+
+=== Immediate (P0)
+
+1. **Fix Unsafe Pointer Casts in Zig FFI**:
+   - Add proper safety documentation
+   - Use @ptrCast with @alignCast consistently
+   - Add runtime validation where possible
+   - Document all unsafe operations
+
+2. **Implement Proper Cryptography**:
+   - Replace placeholder implementations with real libraries
+   - Use libsodium for EdD448 and symmetric crypto
+   - Use liboqs for Kyber-1024
+   - Use official BLAKE3 and SHA-3 implementations
+
+3. **Add Comprehensive Error Handling**:
+   - Structured error codes
+   - Error context propagation
+   - Error logging with correlation IDs
+   - Graceful degradation
+
+=== Short-term (P1)
+
+1. **Implement Circuit Breaker**:
+   - Per-endpoint circuit breaker
+   - Configurable thresholds
+   - Automatic recovery
+
+2. **Add Exponential Backoff**:
+   - Configurable base delay
+   - Jitter to prevent thundering herd
+   - Per-operation retry limits
+
+3. **Implement Session Encryption**:
+   - Encrypt session files at rest
+   - Use user-provided encryption keys
+   - Key derivation from password
+
+4. **Add Comprehensive Logging**:
+   - Structured log format
+   - Multiple log levels
+   - Log rotation
+   - Emergency logging
+
+=== Medium-term (P2)
+
+1. **Implement Health Checks**:
+   - Dependency health checks
+   - API connectivity checks
+   - Session validity checks
+   - Structured health status
+
+2. **Add Watchdog Timer**:
+   - Detect hung operations
+   - Automatic restart
+   - Configurable timeout
+
+3. **Implement Metrics Collection**:
+   - Operation counters
+   - Timing metrics
+   - Error rates
+   - Prometheus-compatible format
+
+4. **Add Audit Logging**:
+   - All sensitive operations
+   - Immutable audit log
+   - Audit log encryption
+   - Audit log rotation
+
+=== Long-term (P3)
+
+1. **Implement Plugin System**:
+   - Plugin discovery
+   - Plugin loading
+   - Plugin isolation
+   - Plugin API
+
+2. **Add Webhook Support**:
+   - Incoming webhooks
+   - Outgoing webhooks
+   - Webhook authentication
+   - Webhook retry logic
+
+3. **Implement Web Interface**:
+   - Responsive design
+   - Full functionality
+   - Accessibility compliance
+   - Mobile support
+
+4. **Add Team Features**:
+   - Shared configurations
+   - Team accounts
+   - Role-based access control
+   - Audit trails
+
+== Implementation Priority
+
+The following order is recommended for implementation:
+
+1. **Security First**: Implement proper cryptography and session encryption
+2. **Reliability**: Add circuit breaker, exponential backoff, error handling
+3. **Observability**: Add comprehensive logging, metrics, health checks
+4. **Testing**: Complete test coverage, benchmark suite
+5. **Performance**: Optimize resource usage, add concurrency
+6. **Usability**: Improve CLI/TUI, add documentation
+7. **Features**: Add advanced features, plugins, integrations
+
+== References
+
+* <<trigger-man.adoc#,Trigger Manual Page>>
+* <<EXPLAINME.adoc#,Trigger Explanation>>
+* <<https://github.com/hyperpolymath/standards/,Hyperpolymath Standards>>
+* <<https://www.adacore.com/,Ada/SPARK Documentation>>
+* <<https://ziglang.org/,Zig Documentation>>
+* <<https://idris-lang.org/,Idris2 Documentation>>

@@ -1,0 +1,218 @@
+$TTL 3600
+; $ORIGIN trigger.example.com.
+; 
+; Bind9 Zone File for Trigger Application
+; 
+; This file contains DNS Resource Records for the Trigger
+; Telegram reporting utility. These records were previously
+; in www/.well-known/ but have been moved to proper DNS records.
+; 
+; Author: hyperpolymath
+; Version: 1.0.0
+; Serial: 2026081301 (YYYYMMDDNN format)
+; Refresh: 3600 (1 hour)
+; Retry: 1800 (30 minutes)
+; Expire: 604800 (1 week)
+; Minimum: 3600 (1 hour)
+; 
+; =============================================================================
+; SOA Record (Start of Authority)
+; =============================================================================
+@   IN  SOA ns1.trigger.example.com. admin.trigger.example.com. (
+    2026081301 ; Serial
+    3600       ; Refresh
+    1800       ; Retry
+    604800     ; Expire
+    3600       ; Minimum TTL
+)
+
+; =============================================================================
+; NS Records (Name Servers)
+; =============================================================================
+@   IN  NS  ns1.trigger.example.com.
+@   IN  NS  ns2.trigger.example.com.
+
+; =============================================================================
+; A and AAAA Records (Address)
+; =============================================================================
+ns1 IN  A       192.0.2.1
+ns2 IN  A       192.0.2.2
+@   IN  A       192.0.2.10
+@   IN  AAAA    2001:0db8::10
+
+; =============================================================================
+; CAA Records (Certification Authority Authorization)
+; =============================================================================
+; 
+; CAA records specify which Certificate Authorities are allowed to issue
+; certificates for this domain. This prevents unauthorized certificate issuance.
+; 
+; Format: CAA <flags> <tag> <value>
+;   - Flags: 0 = non-critical, 128 = critical
+;   - Tag: issue, issuewild, iodef
+;   - Value: CA domain or email
+
+@   IN  CAA 0 issue "letsencrypt.org"
+@   IN  CAA 0 issuewild "letsencrypt.org"
+@   IN  CAA 0 iodef "mailto:hyperpolymath@users.noreply.github.com"
+
+; =============================================================================
+; TLSA Records (DANE - DNS-based Authentication of Named Entities)
+; =============================================================================
+; 
+; TLSA records enable DANE, which allows TLS certificate verification via DNS.
+; This provides an additional layer of security beyond PKI.
+; 
+; Format: TLSA <usage> <selector> <matching-type> <certificate-association-data>
+;   - Usage: 0 = PKIX-TA, 1 = PKIX-EE, 2 = DANE-TA, 3 = DANE-EE
+;   - Selector: 0 = Cert, 1 = SPKI
+;   - Matching Type: 0 = Reserved, 1 = SHA-256, 2 = SHA-512
+; 
+; For DANE-EE (Usage 3) with SPKI (Selector 1) and SHA-256 (Matching Type 1):
+; Replace <SHA256-HASH> with actual SHA-256 hash of the SPKI
+; 
+; Example (placeholder - replace with actual certificate hash):
+;_443._tcp  IN  TLSA 3 1 1 <SHA256-HASH-OF-SPKI>
+
+; For now, these are commented out as they require actual certificate deployment
+;_443._tcp    IN  TLSA 3 1 1 0000000000000000000000000000000000000000000000000000000000000000
+;_8080._tcp   IN  TLSA 3 1 1 0000000000000000000000000000000000000000000000000000000000000000
+
+; =============================================================================
+; ZONEMD Records (Zone Metadata)
+; =============================================================================
+; 
+; ZONEMD records provide metadata about the DNS zone itself, including
+; information about the entities authorized to make changes to the zone.
+; 
+; Format: ZONEMD <digest-algorithm> <digest>
+; 
+; The digest is computed over a canonical representation of the ZONEMD JSON.
+; 
+; Example JSON that would be hashed:
+; {
+;   "version": 1,
+;   "policy": {
+;     "allowed": ["github.com", "hyperpolymath.github.io"],
+;     "disallowed": []
+;   },
+;   "members": {
+;     "github.com": {
+;       "contact": "https://github.com/hyperpolymath/trigger/issues"
+;     }
+;   }
+; }
+; 
+; For now, this is a placeholder - actual ZONEMD requires proper hash computation
+;_zonemd IN  ZONEMD 1 <SHA-384-HASH-OF-JSON>
+
+; =============================================================================
+; SSHFP Records (SSH Fingerprint)
+; =============================================================================
+; 
+; SSHFP records store SSH public key fingerprints in DNS for verification.
+; This enables SSH FP (SSH Fingerprint) verification.
+; 
+; Format: SSHFP <algorithm> <fingerprint-type> <fingerprint>
+;   - Algorithm: 1 = RSA, 2 = DSA, 3 = ECDSA, 4 = Ed25519
+;   - Fingerprint Type: 1 = SHA-1, 2 = SHA-256
+; 
+; Example (placeholder - replace with actual SSH key fingerprints):
+;@   IN  SSHFP 3 2 0000000000000000000000000000000000000000000000000000000000000000
+
+; =============================================================================
+; OPENPGPKEY Records (OpenPGP Public Key)
+; =============================================================================
+; 
+; OPENPGPKEY records store OpenPGP public keys in DNS for verification.
+; This enables email encryption and signature verification.
+; 
+; Format: OPENPGPKEY <base64-encoded-key>
+; 
+; Example (placeholder - replace with actual PGP key):
+;@   IN  OPENPGPKEY ( mQINBF... )  ; Base64-encoded OpenPGP key
+
+; =============================================================================
+; TXT Records (Text)
+; =============================================================================
+; 
+; General TXT records for various purposes
+
+; Security contact information (from security.txt)
+@   IN  TXT "v=security.txt; contact=mailto:hyperpolymath@users.noreply.github.com; encryption=https://github.com/hyperpolymath/trigger/security"
+
+; Human contact information (from humans.txt)
+@   IN  TXT "v=humans.txt; team=Trigger Development Team; repository=https://github.com/hyperpolymath/trigger"
+
+; AI contact information (from ai.txt)
+@   IN  TXT "v=ai.txt; contact=mailto:hyperpolymath@users.noreply.github.com; model-policy=https://github.com/hyperpolymath/trigger/docs/AI-POLICY.adoc"
+
+; =============================================================================
+; MX Records (Mail Exchange)
+; =============================================================================
+; 
+; Mail server for the domain (if applicable)
+@   IN  MX  10 mail.trigger.example.com.
+
+; =============================================================================
+; SRV Records (Service)
+; =============================================================================
+; 
+; Service discovery records
+
+; XMPP/Jabber service (if applicable)
+;_xmpp-server._tcp IN  SRV 0 5 5269 xmpp.trigger.example.com.
+;_xmpp-client._tcp IN  SRV 0 5 5222 xmpp.trigger.example.com.
+
+; HTTPS service
+_https._tcp  IN  SRV 0 1 443 trigger.example.com.
+
+; =============================================================================
+; CNAME Records (Canonical Name)
+; =============================================================================
+; 
+; Aliases
+www IN  CNAME   @
+api IN  CNAME   @
+static IN CNAME @
+
+; =============================================================================
+; NAPTR Records (Naming Authority Pointer)
+; =============================================================================
+; 
+; For service discovery (if applicable)
+
+; =============================================================================
+; HINFO Records (Host Information)
+; =============================================================================
+; 
+; Host information
+@   IN  HINFO "Trigger" "Telegram Reporting Utility"
+
+; =============================================================================
+; LOC Records (Location)
+; =============================================================================
+; 
+; Physical location (if applicable)
+;@   IN  LOC 51 30 26.916 N 0 0 5.632 W 0.00m 0.00m 0.00m 0.00m
+
+; =============================================================================
+; NSEC3 Records (DNSSEC)
+; =============================================================================
+; 
+; For DNSSEC-signed zones
+; 
+; Note: NSEC3 records are typically generated automatically by the DNS server
+; when DNSSEC is enabled. They provide authenticated denial of existence.
+
+; =============================================================================
+; DS Records (Delegation Signer)
+; =============================================================================
+; 
+; For DNSSEC delegations from parent zones
+; 
+; Note: DS records are typically placed in the parent zone, not in this file.
+
+; =============================================================================
+; End of Zone File
+; =============================================================================

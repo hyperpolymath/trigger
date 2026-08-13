@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "policy": {
+    "allowed": ["github.com", "hyperpolymath.github.io"],
+    "disallowed": []
+  },
+  "members": {
+    "github.com": {
+      "contact": "https://github.com/hyperpolymath/trigger/issues"
+    }
+  }
+}
+
+# NOTE: ZONEMD records are NOW DEFINED in security/bind9/trigger.zone
+# This file is kept for compatibility. The authoritative ZONEMD record 
+# should be in DNS, not in .well-known/. See security/bind9/trigger.zone
+# for the actual DNS records.

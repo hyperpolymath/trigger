@@ -1,0 +1,76 @@
+# Trigger Container Ignore
+# 
+# Files and directories to be excluded from the container build context
+
+# Git
+.git
+.gitignore
+.gitattributes
+.gitmodules
+
+# Documentation build
+*.html
+docs/html/
+
+# Build artifacts
+obj/
+bin/
+*.o
+*.ali
+*.a
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+.TMP
+
+# Session data (sensitive)
+sessions/
+*.session
+*.sessionj
+
+# Configuration (local)
+config.json
+config.json.bak
+
+# Environment
+.env
+.env.*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Zig cache
+.zig-cache/
+
+# Idris2
+.idris2/
+
+# Alire
+.alire/
+.alr/
+
+# Test coverage
+.coverage
+*.lcov
+
+# Documentation source (we copy these explicitly in Containerfile)
+*.adoc
+LICENSE*
+
+# Justfile and Makefiles (copied explicitly)
+Justfile
+*.mk
+
+# Machine readable (copied explicitly)
+.machine_readable/

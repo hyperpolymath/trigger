@@ -1,0 +1,250 @@
+name: Ada/SPARK CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - '*.gpr'
+      - 'Justfile'
+      - '.github/workflows/ada-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - '*.gpr'
+      - 'Justfile'
+      - '.github/workflows/ada-ci.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly build
+
+env:
+  APP_NAME: trigger
+  ADA_VERSION: "community-2024"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alire-project/gnat-native:latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          apt-get update && apt-get install -y --no-install-recommends \
+            git \
+            wget \
+            curl \
+            ca-certificates \
+            && rm -rf /var/lib/apt/lists/*
+
+      - name: Build with GNAT
+        run: |
+          mkdir -p obj bin
+          gprbuild -P trigger.gpr -XLIBRARY_TYPE=static
+          ls -la bin/
+
+      - name: Verify binary
+        run: |
+          if [ -f bin/trigger ]; then
+            echo "Binary built successfully"
+            file bin/trigger
+            size=$(stat -c%s bin/trigger)
+            echo "Binary size: $size bytes"
+          else
+            echo "::error::Binary not found"
+            exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: trigger-binaries
+          path: |
+            bin/trigger
+            obj/
+
+  
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alire-project/gnat-native:latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: trigger-binaries
+          path: .
+
+      - name: Run tests
+        run: |
+          if [ -f tests/test_trigger.adb ]; then
+            echo "Compiling tests..."
+            gprbuild -P trigger.gpr tests/test_trigger.adb
+            echo "Running tests..."
+            ./obj/test_trigger
+          else
+            echo "::warning::No test file found"
+          fi
+
+  
+  zig-ffi:
+    name: Zig FFI
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alire-project/gnat-native:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Zig
+        run: |
+          wget -O /tmp/zig.tar.xz https://ziglang.org/builds/zig-linux-x86_64-0.11.0.tar.xz
+          tar -xf /tmp/zig.tar.xz -C /usr/local
+          ln -s /usr/local/zig-linux-x86_64-0.11.0/zig /usr/local/bin/zig
+          rm /tmp/zig.tar.xz
+          zig version
+
+      - name: Build Zig FFI
+        run: |
+          cd ffi/zig
+          zig build-lib -dynamic telegram.zig
+          cd ../..
+          ls -la ffi/zig/
+
+      - name: Upload Zig artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: zig-ffi
+          path: ffi/zig/
+
+  
+  diagnostics:
+    name: Diagnostics
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alire-project/gnat-native:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run self-diagnostics
+        run: |
+          if [ -f bin/trigger ]; then
+            ./bin/trigger --diagnose || true
+          else
+            echo "Binary not built, running static checks..."
+            echo "Checking for required files..."
+            for f in LICENSE README.adoc trigger.gpr; do
+              if [ -f "$f" ]; then
+                echo "  [OK] $f"
+              else
+                echo "  [MISSING] $f"
+              fi
+            done
+          fi
+
+      - name: Check file permissions
+        run: |
+          echo "Checking file permissions..."
+          find . -name "*.adb" -o -name "*.ads" | head -10 | while read f; do
+            perms=$(stat -c "%a" "$f")
+            echo "  $f: $perms"
+          done
+
+      - name: Check line endings
+        run: |
+          echo "Checking line endings..."
+          files=$(find . -name "*.adb" -o -name "*.ads" -o -name "*.adoc")
+          for f in $files; do
+            if file "$f" | grep -q "CRLF"; then
+              echo "  [WARNING] $f has CRLF line endings"
+            else
+              echo "  [OK] $f"
+            fi
+          done
+
+  
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alire-project/gnat-native:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for secrets
+        run: |
+          echo "Checking for secrets..."
+          # Check for API keys
+          if grep -r "api_id.*=" . --include="*.adb" --include="*.ads" --include="*.json" 2>/dev/null; then
+            echo "::warning::Potential API ID found"
+          fi
+          if grep -r "api_hash.*=" . --include="*.adb" --include="*.ads" --include="*.json" 2>/dev/null; then
+            echo "::warning::Potential API hash found"
+          fi
+          if grep -r "password.*=" . --include="*.adb" --include="*.ads" 2>/dev/null; then
+            echo "::warning::Potential password found"
+          fi
+
+      - name: Check for hardcoded sensitive data
+        run: |
+          echo "Checking for hardcoded sensitive data..."
+          # These should be configuration, not hardcoded
+          if grep -r "12345" src/ 2>/dev/null; then
+            echo "::warning::Potential test value found"
+          fi
+
+      - name: Check permissions on sensitive directories
+        run: |
+          echo "Checking permissions..."
+          if [ -d "sessions" ]; then
+            perms=$(stat -c "%a" sessions)
+            echo "  sessions: $perms"
+            if [ "$perms" != "750" ] && [ "$perms" != "700" ]; then
+              echo "::warning::sessions directory has permissive permissions"
+            fi
+          fi
+
+  
+  notifications:
+    name: Notifications
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [build, test, zig-ffi, diagnostics, security]
+
+    steps:
+      - name: Check job status
+        run: |
+          echo "Build workflow completed"
+          echo "Job status:"
+          echo "  build: ${{ needs.build.result }}"
+          echo "  test: ${{ needs.test.result }}"
+          echo "  zig-ffi: ${{ needs.zig-ffi.result }}"
+          echo "  diagnostics: ${{ needs.diagnostics.result }}"
+          echo "  security: ${{ needs.security.result }}"
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "::error::One or more jobs failed"
+          # In a real implementation, this would send a notification
+          # via GitHub Issues, Slack, Email, etc.

@@ -1,0 +1,551 @@
+= Trigger - Project Explanation
+:description: Comprehensive explanation of the Trigger project design and implementation
+:author: hyperpolymath
+:revdate: 2026-08-13
+:revnumber: 1.0.0
+:language: en
+:toc: auto
+:toclevels: 3
+
+== What is Trigger?
+
+Trigger is a Telegram channel reporting utility that implements the functionality 
+originally designed in Ripper by 2nixx (T.me/NetworkCriminals), completely rewritten 
+in Ada/SPARK with Zig FFI bindings and Idris2 API abstractions.
+
+This project represents a production-grade implementation suitable for:
+
+* Automated Telegram content moderation workflows
+* Multi-account reporting operations
+* Research into social media automation
+* Demonstration of Ada/SPARK safety features
+* Showcase of Zig FFI capabilities
+* Idris2 type-safe API design patterns
+
+== Why This Project Exists
+
+=== The Original Problem
+
+The original Ripper tool (by 2nixx) provided valuable functionality for Telegram 
+channel reporting but was implemented in Python with certain limitations:
+
+* Dynamic typing leading to runtime errors
+* Limited formal verification capabilities
+* GIL-based concurrency model
+* Dependency on external Python packages
+* Limited safety guarantees for multi-account operations
+
+=== The Solution
+
+Trigger rewrites this functionality using:
+
+* *Ada/SPARK* for the core application, providing:
+  - Strong static typing
+  - Formal verification (SPARK proofs)
+  - Mature concurrency model (tasking)
+  - Predictable performance
+  - Safety-critical guarantees
+
+* *Zig* for FFI bindings, providing:
+  - Excellent C interop
+  - Manual memory management
+  - No hidden control flow
+  - Compile-time code execution
+  - Cross-platform support
+
+* *Idris2* for API abstractions, providing:
+  - Dependent types for correctness
+  - Pure functional interfaces
+  - Type-safe FFI wrappers
+  - Strong guarantees through types
+
+== Architecture Philosophy
+
+=== Language Selection Rationale
+
+[cols="1,3,2", options="header"]
+|===
+|Component|Language|Rationale
+
+|Core Application|Ada/SPARK|Safety, verification, reliability
+|Telegram Bindings|Zig|FFI, performance, control
+|API Abstractions|Idris2|Type safety, purity, correctness
+|===
+
+This polyglot approach allows each component to use the language best suited to its 
+purposes while maintaining clean interfaces between them.
+
+=== Design Principles
+
+* *Safety First*: All operations are designed to be safe and predictable
+* *Formal Verification*: Critical components use SPARK for mathematical proof
+* *Fault Tolerance*: System continues operating despite partial failures
+* *Self-Healing*: Automatic recovery from common error conditions
+* *Self-Diagnostics*: Comprehensive health checking capabilities
+* *High Arity CLI*: Rich command-line interface for workflow integration
+* *ADI TUI*: Advanced text-based interface for interactive use
+
+== Technical Implementation
+
+=== Core Application (Ada/SPARK)
+
+The main application is structured as:
+
+----
+src/trigger/
+├── trigger.adb/ads          # Main entry point and TUI
+├── config/
+│   └── config.adb/ads        # Configuration management
+├── session/
+│   ├── account_types.adb/ads # Account data structures
+│   └── session_manager.adb/ads # Session lifecycle
+├── reporting/
+│   └── reporter.adb/ads      # Reporting functionality
+└── utils/
+    ├── logging.adb/ads       # Logging infrastructure
+    ├── terminal.adb/ads      # Terminal utilities
+    └── crypto.adb/ads        # Cryptography (stub)
+----
+
+Key features:
+
+* Type-safe data structures
+* Exception handling at all levels
+* Session persistence with encryption support
+* Multi-account concurrent operation
+* Comprehensive error reporting
+
+=== FFI Layer (Zig)
+
+The Zig FFI provides:
+
+* Telegram API bindings via unified-hexadeca-api
+* C-compatible interfaces for Ada
+* Memory-safe FFI operations
+* Error propagation across language boundary
+
+Structure:
+
+----
+ffi/zig/
+└── telegram.zig              # Telegram client wrapper
+    ├── TelegramClient struct  # Client state
+    ├── C-exported functions   # For Ada FFI
+    └── Error handling         # Zig error → C return
+----
+
+=== API Layer (Idris2)
+
+The Idris2 layer provides:
+
+* Type-safe wrappers around Zig FFI
+* Functional programming model
+* Dependent types for correctness
+* Pure interfaces where appropriate
+
+Structure:
+
+----
+ffi/idris2/
+└── TelegramAPI.idr           # API abstractions
+    ├── Session type           # Session representation
+    ├── Message type           # Message representation
+    └── Effect-based operations # Side effects
+----
+
+== CLI Design
+
+=== Design Philosophy
+
+The CLI is designed for:
+
+1. *Workflow Integration*: Can be used in scripts, cron jobs, CI/CD
+2. *High Arity*: Many options for fine-grained control
+3. *Composability*: Options can be combined in various ways
+4. *Discoverability*: Comprehensive help and man pages
+5. *Safety*: Dry-run mode, validation, clear error messages
+
+=== Flag Categories
+
+. *Informational*: --help, --man, --version, --license
+. *Configuration*: --config, --save-config, --reset-config
+. *Credentials*: --api-id, --api-hash, --set-credentials
+. *Sessions*: --session-dir, --list-sessions, --clean-sessions
+. *Proxy*: --proxy, --no-proxy
+. *Logging*: --log-level, --log-file, --no-color, --quiet
+. *Accounts*: --account, --all-accounts, --list-accounts, --add-account, --remove-account
+. *Reporting*: --channel, --list-channels, --report-count, --delay, --reason, --dry-run
+. *Encryption*: --encrypt, --decrypt, --salt, --password
+. *Diagnostics*: --diagnose, --self-heal, --health, --check-deps, --check-config, --check-sessions
+. *Repair*: --fix-config, --fix-permissions, --fix-sessions
+
+=== Arity
+
+The CLI supports:
+
+* Zero arguments: Launch ADI TUI
+* Single arguments: Various informational/diagnostic commands
+* Multiple arguments: Combine options for specific operations
+* Many arguments: Full control over all aspects of operation
+
+Example high-arity command:
+
+----
+trigger \
+  --api-id 12345 \
+  --api-hash abcdef123456 \
+  --session-dir ./sessions \
+  --proxy socks5://127.0.0.1:1080 \
+  --log-level debug \
+  --log-file trigger.log \
+  --account +1234567890 \
+  --channel spam_channel \
+  --report-count 10 \
+  --delay 3.0 \
+  --reason spam \
+  --encrypt \
+  --salt my_salt \
+  --password my_pass
+----
+
+== ADI TUI Design
+
+=== ADI (Advanced Dialog Interface)
+
+ADI is a text-based user interface that provides:
+
+* *Modal Dialogs*: Focused interaction for specific tasks
+* *Context-Sensitive Help*: Help relevant to current context
+* *Keyboard Navigation*: Efficient non-mouse operation
+* *Color-Coded Output*: Visual feedback on status
+* *Form Validation*: Real-time validation of input
+* *Progress Indication*: Visual feedback during operations
+* *Error Recovery*: Options to recover from error states
+
+=== TUI Components
+
+. *Main Menu*: Top-level navigation
+. *Account Management*: Add, list, remove accounts
+. *Session Management*: View, encrypt, decrypt sessions
+. *Reporting Interface*: Configure and execute reporting
+. *Configuration Editor*: Edit all settings
+. *Diagnostics Dashboard*: View system health
+. *Error Recovery*: Options for error resolution
+
+=== Navigation
+
+* *Arrow Keys*: Move between menu items
+* *Enter*: Select highlighted item
+* *Esc*: Go back / cancel
+* *Tab*: Move between fields in forms
+* *Number Keys*: Direct menu item selection
+* *?*: Context-sensitive help
+
+== Self-Diagnostics System
+
+=== Diagnostic Categories
+
+. *Dependencies*: Check for required compilers and libraries
+. *Configuration*: Validate configuration files and values
+. *Sessions*: Verify session files and directory
+. *Network*: Test connectivity to Telegram servers
+. *Permissions*: Check file and directory permissions
+. *Storage*: Verify disk space and quotas
+
+=== Diagnostic Output
+
+Each diagnostic produces:
+
+* *Status*: OK (green), WARNING (yellow), ERROR (red)
+* *Description*: What was checked
+* *Details*: Specific findings
+* *Remediation*: How to fix (if applicable)
+* *Auto-Fix*: Whether it can be fixed automatically
+
+Example output:
+
+----
+[DIAGNOSTICS] Running system diagnostics...
+
+[OK] GNAT Compiler
+     Description: Ada/SPARK compiler check
+     Details: GNAT Community 2024 detected at /usr/bin/gnat
+     
+[OK] Zig Compiler  
+     Description: Zig compiler check
+     Details: Zig 0.11.0 detected at /usr/bin/zig
+     
+[WARNING] Configuration File
+     Description: Configuration file check
+     Details: config.json not found
+     Remediation: Run 'trigger --set-credentials' or provide via --config
+     Auto-Fix: No
+     
+[OK] Session Directory
+     Description: Session directory check
+     Details: ./sessions exists and is writable
+     
+[ERROR] Telegram Connectivity
+     Description: Network connectivity to Telegram
+     Details: Connection timeout after 5s
+     Remediation: Check network connection and proxy settings
+     Auto-Fix: No
+
+Diagnostics Complete: 3 OK, 1 WARNING, 1 ERROR
+----
+
+== Self-Healing System
+
+=== Healing Categories
+
+. *Configuration*: Fix missing/invalid configuration values
+. *Sessions*: Repair corrupted session files
+. *Permissions*: Fix file and directory permissions
+. *Dependencies*: Provide installation hints for missing dependencies
+. *State*: Recover from interrupted operations
+
+=== Healing Actions
+
+Each healing action:
+
+* *Identifies*: Specific issue to fix
+* *Validates*: That the fix is safe to apply
+* *Applies*: The fix automatically
+* *Reports*: What was fixed
+* *Fails Safely*: If fix cannot be applied safely
+
+Example self-healing:
+
+----
+[HEALING] Running self-healing...
+
+[FIXED] Configuration File
+     Action: Created default config.json
+     Location: ./config.json
+     
+[FIXED] Session Directory
+     Action: Created directory
+     Location: ./sessions
+     
+[SKIPPED] Telegram Connectivity
+     Reason: Requires user action (check network)
+     
+[FIXED] File Permissions
+     Action: Made writable
+     Files: ./sessions/session_*.sessionj
+
+Self-Healing Complete: 3 fixed, 1 skipped, 0 failed
+----
+
+== Fault-Tolerance Features
+
+=== Error Classification
+
+[cols="1,2,1", options="header"]
+|===
+|Class|Description|Recovery
+
+|Transient|Temporary issues (network, rate limits)|Automatic retry with backoff
+|Recoverable|Fixable issues (corrupted files)|Self-healing attempt
+|Permanent|Unfixable issues (invalid credentials)|User intervention required
+|Fatal|Critical errors (out of memory)|Graceful exit with logging
+|===
+
+=== Recovery Strategies
+
+. *Exponential Backoff*: For rate-limited operations
+. *Circuit Breaker*: Prevent repeated failures
+. *Fallback Values*: Use defaults when values unavailable
+. *Partial Failure*: Continue with remaining items
+. *State Checkpointing*: Persist state for recovery
+. *Error Isolation*: Prevent cascading failures
+
+=== Resilience Patterns
+
+* *Retry with Backoff*: Automatic retry with increasing delays
+* *Circuit Breaker*: Stop retrying after N failures
+* *Bulkhead*: Isolate resources per operation type
+* *Timeout*: Prevent hanging on slow operations
+* *Fallback*: Use alternative approach when primary fails
+* *Cache*: Use cached data when source unavailable
+
+== Workflow Integration
+
+=== Scripting Support
+
+Trigger is designed for integration into workflows:
+
+* *Exit Codes*: Clear success/failure indication
+* *JSON Output*: Machine-readable output formats
+* *Quiet Mode*: Suppress output for scripts
+* *Dry Run*: Preview actions without executing
+* *Configuration Files*: External configuration for reproducibility
+
+Example workflow:
+
+----
+#!/bin/bash
+
+# Configure
+trigger --api-id $TELEGRAM_API_ID \
+       --api-hash $TELEGRAM_API_HASH \
+       --save-config
+
+# Dry run to verify
+ttrigger --dry-run --channel $CHANNEL --report-count 5
+if [ $? -ne 0 ]; then
+    echo "Dry run failed"
+    exit 1
+fi
+
+# Actual reporting
+trigger --channel $CHANNEL --report-count 5 --all-accounts
+if [ $? -ne 0 ]; then
+    echo "Reporting failed"
+    # Run diagnostics
+    trigger --diagnose >> /var/log/trigger_diagnostics.log
+    exit 1
+fi
+
+echo "Reporting completed successfully"
+----
+
+=== CI/CD Integration
+
+Trigger can be used in CI/CD pipelines:
+
+* *Scheduled Jobs*: Regular reporting runs
+* *Condition Checks*: Only report if conditions met
+* *Artifact Collection*: Save reports and logs
+* *Notification*: Integrate with notification systems
+
+Example GitHub Actions workflow:
+
+----
+name: Daily Reporting
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Run at 8 AM daily
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Trigger
+        run: |
+          sudo apt-get install -y gnat zig idris2
+          git clone https://github.com/hyperpolymath/trigger.git
+          cd trigger
+          gprbuild -P trigger.gpr
+      
+      - name: Run Reporting
+        env:
+          TRIGGER_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TRIGGER_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+        run: |
+          cd trigger
+          ./trigger --channel spam_channel \
+                   --report-count 10 \
+                   --all-accounts \
+                   --log-level info \
+                   --log-file report.log
+      
+      - name: Upload Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: trigger-logs
+          path: trigger/*.log
+----
+
+== Project Standards
+
+=== Code Standards
+
+* *Ada/SPARK*: Follow AdaCore coding standards
+* *Zig*: Follow Zig language conventions
+* *Idris2*: Follow Idris2 best practices
+* *Naming*: Clear, descriptive, consistent
+* *Documentation*: All public interfaces documented
+* *Error Handling*: All errors caught and handled
+* *Testing*: All functionality tested
+
+=== Repository Standards
+
+* *Structure*: Follow RSR-template-repo conventions
+* *Licensing*: Clear dual-licensing structure
+* *Documentation*: Comprehensive AsciiDoc documentation
+* *Configuration*: Editor-agnostic configuration files
+* *Git Hygiene*: Clean commit history, descriptive messages
+
+=== Quality Standards
+
+* *Verification*: SPARK proofs where applicable
+* *Testing*: Unit tests for all functionality
+* *Validation*: Input validation at all boundaries
+* *Performance*: Efficient algorithms and data structures
+* *Security*: Safe handling of sensitive data
+* *Reliability*: Robust error handling and recovery
+
+== Getting Involved
+
+=== Reporting Issues
+
+When reporting issues, please include:
+
+* Version of Trigger
+* Version of compilers (GNAT, Zig, Idris2)
+* Operating system
+* Steps to reproduce
+* Expected vs. actual behavior
+* Relevant log output
+
+=== Contributing Code
+
+See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] for contribution guidelines.
+
+All contributions should:
+
+* Follow project coding standards
+* Include comprehensive documentation
+* Add appropriate tests
+* Maintain backward compatibility (where possible)
+* Respect the licensing structure
+
+=== Development Workflow
+
+. Fork the repository
+. Create a feature/bugfix branch
+. Implement changes with tests
+. Run full test suite
+. Run SPARK verification (where applicable)
+. Update documentation
+. Submit pull request
+
+== Recognition
+
+=== Original Project
+
+This project implements functionality originally designed in *Ripper* by *2nixx* 
+(Telegram: https://t.me/NetworkCriminals[@NetworkCriminals]).
+
+The original project provided valuable functionality that this implementation 
+builds upon with enhanced safety, verification, and architecture.
+
+=== Inspirations
+
+* *Ripper*: Original concept and feature set
+* *RSR Philosophy*: Repository structure and standards
+* *Ada/SPARK*: Safety and verification approach
+* *Zig*: FFI and systems programming approach
+* *Idris2*: Type-safe API design approach
+
+== See Also
+
+* link:README.adoc[README] - Main documentation
+* link:CONTRIBUTING.adoc[CONTRIBUTING] - Contribution guidelines
+* link:GOVERNANCE.adoc[GOVERNANCE] - Project governance
+* link:AFFIRMATION.adoc[AFFIRMATION] - Compliance affirmation
+* link:docs/ARCHITECTURE.adoc[Architecture] - Technical architecture

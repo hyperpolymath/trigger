@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: MPL-2.0
+# CODEOWNERS - Define code review assignments
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repositorys-settings/about-code-owners
+
+# Default owner for everything
+* @hyperpolymath
+
+# Security-sensitive files require explicit review
+SECURITY.md @hyperpolymath
+.github/workflows/ @hyperpolymath
+.machine_readable/ @hyperpolymath
+www/.well-known/ @hyperpolymath
+container/ @hyperpolymath
+ffi/ @hyperpolymath
+
+# Ada/SPARK code
+src/ @hyperpolymath
+
+# Documentation
+docs/ @hyperpolymath
+*.adoc @hyperpolymath
+
+# Configuration
+*.gpr @hyperpolymath
+Justfile @hyperpolymath

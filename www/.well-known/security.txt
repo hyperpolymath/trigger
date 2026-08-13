@@ -1,0 +1,39 @@
+Contact: https://github.com/hyperpolymath/trigger/issues
+Contact: mailto:hyperpolymath@users.noreply.github.com
+
+Security Policy: https://github.com/hyperpolymath/trigger/security/policy
+
+Acknowledgments: https://github.com/hyperpolymath/trigger/graphs/contributors
+
+Preferred Languages: en
+
+Canonical: https://github.com/hyperpolymath/trigger/.well-known/security.txt
+
+Policy: https://github.com/hyperpolymath/trigger/security/policy
+
+# Encryption
+Encryption: https://github.com/hyperpolymath/trigger/issues
+
+# Key Information
+OpenPGP: Not currently available
+
+# Cryptography
+This project uses:
+- EdD448 for digital signatures
+- Kyber-1024 for post-quantum key encapsulation
+- BLAKE3 for hashing
+- SHAKE-512 for extendable-output functions
+
+# Security Reports
+To report a security vulnerability, please use the GitHub Security Advisories:
+https://github.com/hyperpolymath/trigger/security/advisories
+
+# Scope
+This security.txt covers the Trigger repository only.
+
+# Expiration
+This security.txt file was last updated on 2026-08-13.
+It should be refreshed every 6 months or when significant changes occur.
+
+# Signature
+This file is digitally signed using the repository's commit signing key.

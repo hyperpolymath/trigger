@@ -1,0 +1,239 @@
+policy_module(trigger, 1.0.0)
+
+########################################
+#
+# SELinux Policy for Trigger Application
+#
+# This policy defines the security context for the Trigger
+# Telegram reporting utility.
+#
+# Author: hyperpolymath
+# Version: 1.0.0
+#
+########################################
+
+require {
+    type bin_t;
+    type lib_t;
+    type user_home_t;
+    type httpd_sys_content_t;
+    type var_t;
+    type etc_t;
+    type tmp_t;
+    
+    type appuser_t;
+    type trigger_t;
+    type trigger_exec_t;
+    type trigger_var_run_t;
+    type trigger_log_t;
+    type trigger_config_t;
+    type trigger_session_t;
+    type trigger_tmp_t;
+    type trigger_www_t;
+    
+    class file { read write create execute getattr setattr lock relabelto };
+    class dir { read write create add_name remove_name search getattr setattr relabelto };
+    class process { execmem execstack fork signal sigkill sigstop transition };
+    class tcp_socket { connect bind listen accept };
+    class udp_socket { connect bind };
+    class capability { chown dac_override net_bind_service setgid setuid sys_chroot };
+}
+
+# Define custom types for Trigger
+type trigger_t;
+type trigger_exec_t;
+init_daemon_domain(trigger_t, trigger_exec_t)
+
+# Application binary type
+type trigger_bin_t;
+files_type(trigger_bin_t)
+
+# Runtime data type
+type trigger_var_run_t;
+files_var_run_file(trigger_var_run_t)
+
+# Log files type
+type trigger_log_t;
+logging_file(trigger_log_t)
+
+# Configuration files type
+type trigger_config_t;
+files_config_file(trigger_config_t)
+
+# Session files type
+type trigger_session_t;
+files_type(trigger_session_t)
+
+# Temporary files type
+type trigger_tmp_t;
+files_tmp_file(trigger_tmp_t)
+
+# Web content type
+type trigger_www_t;
+files_type(trigger_www_t)
+
+# =============================================================================
+# File Context Definitions
+# =============================================================================
+
+# Application binary
+file_type_auto_trans(trigger_exec_t, bin_t, trigger_bin_t)
+
+# Runtime directory (PID files)
+file_context_pattern(trigger_var_run_t, "/app(/[^/]*)?", "runtime")
+
+# Log directory
+file_context_pattern(trigger_log_t, "/app/logs(/[^/]*)?", "logs")
+
+# Configuration directory
+file_context_pattern(trigger_config_t, "/app/config(/[^/]*)?", "config")
+
+# Session directory
+file_context_pattern(trigger_session_t, "/app/sessions(/[^/]*)?", "sessions")
+
+# Temporary directory
+file_context_pattern(trigger_tmp_t, "/app/tmp(/[^/]*)?", "tmp")
+
+# Web content directory
+file_context_pattern(trigger_www_t, "/app/www(/[^/]*)?", "www")
+
+# =============================================================================
+# Domain Transition Rules
+# =============================================================================
+
+# Allow transition from user domain to trigger domain
+domain_auto_trans(unconfined_t, trigger_exec_t, trigger_t)
+domain_auto_trans(appuser_t, trigger_exec_t, trigger_t)
+
+# =============================================================================
+# Application Domain Rules
+# =============================================================================
+
+# Allow trigger to execute its own binary
+allow trigger_t trigger_bin_t:file { read execute getattr };
+allow trigger_t trigger_exec_t:file { read execute getattr };
+
+# Allow trigger to read/write its runtime data
+allow trigger_t trigger_var_run_t:dir { read write create add_name remove_name search getattr setattr };
+allow trigger_t trigger_var_run_t:file { read write create getattr setattr lock };
+
+# Allow trigger to read/write log files
+allow trigger_t trigger_log_t:dir { read write create add_name remove_name search getattr setattr };
+allow trigger_t trigger_log_t:file { read write create append getattr setattr lock };
+
+# Allow trigger to read/write configuration
+allow trigger_t trigger_config_t:dir { read write create add_name remove_name search getattr setattr };
+allow trigger_t trigger_config_t:file { read write create getattr setattr lock };
+
+# Allow trigger to read/write session files
+allow trigger_t trigger_session_t:dir { read write create add_name remove_name search getattr setattr };
+allow trigger_t trigger_session_t:file { read write create getattr setattr lock };
+
+# Allow trigger to read/write temporary files
+allow trigger_t trigger_tmp_t:dir { read write create add_name remove_name search getattr setattr };
+allow trigger_t trigger_tmp_t:file { read write create getattr setattr lock };
+
+# Allow trigger to read web content (for serving .well-known)
+allow trigger_t trigger_www_t:dir { read search getattr };
+allow trigger_t trigger_www_t:file { read getattr };
+
+# Allow trigger to read system configuration
+allow trigger_t etc_t:dir { read search getattr };
+allow trigger_t etc_t:file { read getattr };
+
+# Allow trigger to read system libraries
+allow trigger_t lib_t:dir { read search getattr };
+allow trigger_t lib_t:file { read execute getattr };
+
+# Allow trigger to read system binaries
+allow trigger_t bin_t:dir { read search getattr };
+allow trigger_t bin_t:file { read execute getattr };
+
+# =============================================================================
+# Network Access Rules
+# =============================================================================
+
+# Allow TCP connections (for Telegram API, HTTP/HTTPS)
+allow trigger_t self:tcp_socket { connect bind listen accept };
+allow trigger_t node_t:tcp_socket { connect };
+
+# Allow UDP connections (for DNS)
+allow trigger_t node_t:udp_socket { connect };
+
+# =============================================================================
+# Capability Rules
+# =============================================================================
+
+# Allow basic capabilities needed for network client
+# Deny: chown, dac_override, setgid, setuid, sys_chroot, net_bind_service
+# (net_bind_service is only needed for servers, not clients)
+
+# Deny unnecessary capabilities
+don't allow trigger_t self:capability { chown dac_override setgid setuid sys_chroot net_bind_service };
+
+# =============================================================================
+# Process Rules
+# =============================================================================
+
+# Allow fork for child processes
+allow trigger_t self:process { fork signal sigkill sigstop };
+
+# Deny dangerous operations
+don't allow trigger_t self:process { execmem execstack };
+
+# =============================================================================
+# File System Access Restrictions
+# =============================================================================
+
+# Deny access to home directories (except via app directory)
+dont allow trigger_t user_home_t:dir { search };
+dont allow trigger_t user_home_t:file { read write };
+
+# Deny access to /etc (except specific allowed paths)
+dont allow trigger_t etc_t:dir { write add_name remove_name };
+dont allow trigger_t etc_t:file { write setattr };
+
+# Deny access to /tmp (use app tmp instead)
+dont allow trigger_t tmp_t:dir { write create add_name remove_name };
+dont allow trigger_t tmp_t:file { write create setattr };
+
+# Deny access to /var (except runtime directory)
+dont allow trigger_t var_t:dir { write create add_name remove_name };
+dont allow trigger_t var_t:file { write create setattr };
+
+# =============================================================================
+# User Domain Rules
+# =============================================================================
+
+# Allow appuser to transition to trigger domain
+allow appuser_t trigger_exec_t:file { read execute getattr };
+allow appuser_t trigger_t:process transition;
+
+# Allow appuser to manage its own files
+allow appuser_t trigger_var_run_t:dir { read write create add_name remove_name search getattr setattr };
+allow appuser_t trigger_var_run_t:file { read write create getattr setattr };
+allow appuser_t trigger_log_t:dir { read write create add_name remove_name search getattr setattr };
+allow appuser_t trigger_log_t:file { read write create append getattr setattr };
+allow appuser_t trigger_config_t:dir { read write create add_name remove_name search getattr setattr };
+allow appuser_t trigger_config_t:file { read write create getattr setattr };
+allow appuser_t trigger_session_t:dir { read write create add_name remove_name search getattr setattr };
+allow appuser_t trigger_session_t:file { read write create getattr setattr };
+
+# =============================================================================
+# Admin Domain Rules
+# =============================================================================
+
+# Allow admin to relabel files for trigger
+allow sysadm_t trigger_bin_t:file relabelto;
+allow sysadm_t trigger_var_run_t:dir relabelto;
+allow sysadm_t trigger_var_run_t:file relabelto;
+allow sysadm_t trigger_log_t:dir relabelto;
+allow sysadm_t trigger_log_t:file relabelto;
+allow sysadm_t trigger_config_t:dir relabelto;
+allow sysadm_t trigger_config_t:file relabelto;
+allow sysadm_t trigger_session_t:dir relabelto;
+allow sysadm_t trigger_session_t:file relabelto;
+allow sysadm_t trigger_tmp_t:dir relabelto;
+allow sysadm_t trigger_tmp_t:file relabelto;
+allow sysadm_t trigger_www_t:dir relabelto;
+allow sysadm_t trigger_www_t:file relabelto;

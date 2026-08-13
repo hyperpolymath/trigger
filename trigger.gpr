@@ -39,26 +39,35 @@ project Trigger is
 
    --  Source files
    for Source_Files use (
+      --  Main application
       "trigger/trigger.adb",
       "trigger/trigger.ads",
-      --  Configuration
-      "trigger/config/config.adb",
-      "trigger/config/config.ads",
-      --  Session management
-      "trigger/session/session_manager.adb",
-      "trigger/session/session_manager.ads",
-      "trigger/session/account_types.adb",
-      "trigger/session/account_types.ads",
-      --  Reporting
-      "trigger/reporting/reporter.adb",
-      "trigger/reporting/reporter.ads",
-      --  Utilities
-      "trigger/utils/logging.adb",
-      "trigger/utils/logging.ads",
-      "trigger/utils/crypto.adb",
-      "trigger/utils/crypto.ads",
-      "trigger/utils/terminal.adb",
-      "trigger/utils/terminal.ads"
+      
+      --  CLI packages
+      "trigger/cli/argument_parser.adb",
+      "trigger/cli/argument_parser.ads",
+      "trigger/cli/help_generator.adb",
+      "trigger/cli/help_generator.ads",
+      "trigger/cli/man_page.adb",
+      "trigger/cli/man_page.ads",
+      "trigger/cli/version_info.adb",
+      "trigger/cli/version_info.ads",
+      
+      --  Core packages
+      "trigger/core/application.adb",
+      "trigger/core/application.ads",
+      "trigger/core/cryptography.adb",
+      "trigger/core/cryptography.ads",
+      
+      --  Diagnostics packages
+      "trigger/diagnostics/system_check.adb",
+      "trigger/diagnostics/system_check.ads",
+      "trigger/diagnostics/self_healing.adb",
+      "trigger/diagnostics/self_healing.ads",
+      
+      --  TUI packages
+      "trigger/tui/main_menu.adb",
+      "trigger/tui/main_menu.ads"
    );
 
    --  Library dependencies
