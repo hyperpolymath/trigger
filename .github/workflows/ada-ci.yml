@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MPL-2.0
+# This workflow is managed by gh actions-lock.
+
 name: Ada/SPARK CI
 
 on:
@@ -32,7 +35,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
         with:
           fetch-depth: 0
           submodules: recursive
@@ -65,7 +68,7 @@ jobs:
           fi
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.2.1
         with:
           name: trigger-binaries
           path: |
@@ -82,10 +85,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3.0.2
         with:
           name: trigger-binaries
           path: .
@@ -110,7 +113,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Install Zig
         run: |
@@ -128,7 +131,7 @@ jobs:
           ls -la ffi/zig/
 
       - name: Upload Zig artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.2.1
         with:
           name: zig-ffi
           path: ffi/zig/
@@ -142,7 +145,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Run self-diagnostics
         run: |
@@ -189,7 +192,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Check for secrets
         run: |
