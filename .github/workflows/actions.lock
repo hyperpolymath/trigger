@@ -3,13 +3,13 @@
 # Docs: https://gh.io/actions-lockfile
 version: 'v0.0.2'
 workflows:
-    '.github/workflows/hypatia-scan.yml': []
     '.github/workflows/ada-ci.yml':
         - 'actions/checkout@v4.4.0'
         - 'actions/download-artifact@v3.0.2'
         - 'actions/upload-artifact@v3.2.1'
     '.github/workflows/dogfood-gate.yml':
         - 'actions/checkout@v4.3.1'
+    '.github/workflows/hypatia-scan.yml': []
     '.github/workflows/label-triage.yml': []
     '.github/workflows/labels.yml': []
     '.github/workflows/openssf-compliance.yml':
