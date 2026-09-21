@@ -1,6 +1,6 @@
 //  Twitter/X API Bindings for Trigger
 //  
-//  Uses unified-hexadeca-api for Twitter/X client functionality
+//  Uses unified-api-adapter for Twitter/X client functionality
 //  via Twitter API v2
 //  
 //  Original concept by 2nixx (T.me/NetworkCriminals)
@@ -14,8 +14,8 @@
 
 const std = @import("std");
 
-// Import unified-hexadeca-api for common utilities
-// const hexadeca = @import("path:unified-hexadeca-api");
+// Import unified-api-adapter for common utilities
+// const unifiedApiAdapter = @import("path:unified-api-adapter");
 
 // =============================================================================
 // TWITTER-SPECIFIC CONSTANTS
@@ -430,7 +430,7 @@ pub export fn twitter_client_report_tweet(
 // - zig-http for HTTP requests (https://github.com/kristoff-it/zig-http)
 // - zig-json for JSON parsing (https://github.com/kristoff-it/zig-json)
 //
-// The unified-hexadeca-api would provide common utilities for:
+// The unified-api-adapter would provide common utilities for:
 // - OAuth 2.0 Bearer token management
 // - HTTP client with retries
 // - JSON serialization/deserialization

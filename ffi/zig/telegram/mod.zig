@@ -1,4 +1,4 @@
-// telegram/mod.zig - Telegram module for unified-hexadeca-api
+// telegram/mod.zig - Telegram module for unified-api-adapter
 //
 // This module exports the Telegram API bindings for use in Trigger.
 //

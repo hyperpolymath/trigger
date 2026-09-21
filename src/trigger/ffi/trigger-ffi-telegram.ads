@@ -1,6 +1,6 @@
 --  Trigger - Telegram FFI Bindings Specification
 --  
---  Ada bindings for Telegram API via Zig FFI (unified-hexadeca-api)
+--  Ada bindings for Telegram API via Zig FFI (unified-api-adapter)
 --  
 --  This package provides the interface for calling Telegram functions
 --  implemented in Zig through C-exported symbols.

@@ -4,7 +4,7 @@
 --  This project implements a multi-platform social media reporting utility
 --  with support for Telegram, Discord, and Twitter/X.
 --  Features: multi-account management, persistent sessions, rate limit handling,
---  platform abstraction via Idris2 ABI and Zig FFI (unified-hexadeca-api).
+--  platform abstraction via Idris2 ABI and Zig FFI (unified-api-adapter).
 --  
 --  Original concept by 2nixx (T.me/NetworkCriminals)
 --  Rewritten in Ada/SPARK for safety and verification

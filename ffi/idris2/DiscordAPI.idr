@@ -10,7 +10,7 @@
 --     ↑ uses
 --   ffi/zig/discord/discord.zig (Zig FFI)
 --     ↑ uses
---   unified-hexadeca-api (Discord client via serenity or similar)
+--   unified-api-adapter (Discord client via serenity or similar)
 --
 -- Original concept by 2nixx (T.me/NetworkCriminals)
 -- Discord API by hyperpolymath

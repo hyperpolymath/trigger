@@ -1,6 +1,6 @@
 --  Trigger - Twitter/X FFI Bindings Specification
 --  
---  Ada bindings for Twitter/X API via Zig FFI (unified-hexadeca-api)
+--  Ada bindings for Twitter/X API via Zig FFI (unified-api-adapter)
 --  
 --  This package provides the interface for calling Twitter/X functions
 --  implemented in Zig through C-exported symbols.

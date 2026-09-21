@@ -32,7 +32,7 @@ package body Trigger.CLI.Man_Page is
         "       Supported platforms: Telegram, Discord, Twitter/X" & ASCII.LF & 
         "" & ASCII.LF & 
         "       This implementation uses Ada/SPARK for the core application, Zig for FFI" & ASCII.LF & 
-        "       bindings, and Idris2 for API layer abstractions following the unified-hexadeca-api." & ASCII.LF & 
+        "       bindings, and Idris2 for API layer abstractions following the unified-api-adapter." & ASCII.LF & 
         "" & ASCII.LF & 
         "ORIGINAL ATTRIBUTION" & ASCII.LF & 
         "       This project implements functionality originally designed in Ripper by" & ASCII.LF & 

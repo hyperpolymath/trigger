@@ -1,6 +1,6 @@
 --  Trigger - Discord FFI Bindings Specification
 --  
---  Ada bindings for Discord API via Zig FFI (unified-hexadeca-api)
+--  Ada bindings for Discord API via Zig FFI (unified-api-adapter)
 --  
 --  This package provides the interface for calling Discord functions
 --  implemented in Zig through C-exported symbols.
