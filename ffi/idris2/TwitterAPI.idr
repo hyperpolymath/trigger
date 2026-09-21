@@ -10,7 +10,7 @@
 --     ↑ uses
 --   ffi/zig/twitter/twitter.zig (Zig FFI)
 --     ↑ uses
---   unified-hexadeca-api (Twitter API v2 client)
+--   unified-api-adapter (Twitter API v2 client)
 --
 -- Original concept by 2nixx (T.me/NetworkCriminals)
 -- Twitter/X API by hyperpolymath

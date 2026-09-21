@@ -7,7 +7,7 @@
 --  
 --  This is the main entry point for the Trigger application.
 --  It provides both a comprehensive CLI and an ADI TUI (Advanced Dialog Interface).
---  Architecture: Ada/SPARK core, Idris2 ABI, Zig FFI (unified-hexadeca-api)
+--  Architecture: Ada/SPARK core, Idris2 ABI, Zig FFI (unified-api-adapter)
 
 with Ada.Text_IO;
 with Ada.Strings.Unbounded;

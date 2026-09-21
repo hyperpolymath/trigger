@@ -46,7 +46,7 @@ The original concept and feature set are acknowledged with gratitude.
 This implementation uses:
 
 * *Ada/SPARK* for the core application logic and session management
-* *Zig* for FFI bindings to Telegram API via unified-hexadeca-api
+* *Zig* for FFI bindings to Telegram API via unified-api-adapter
 * *Idris2* for API layer abstractions where applicable
 
 == License
@@ -362,7 +362,7 @@ trigger
 
 == Dependencies
 
-* *Telethon equivalent*: Implemented via Zig FFI with unified-hexadeca-api
+* *Telethon equivalent*: Implemented via Zig FFI with unified-api-adapter
 * *Colorama equivalent*: Terminal color support in Ada
 * *Cryptography*: AES encryption via SPARK-verified implementations
 

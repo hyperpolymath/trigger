@@ -350,12 +350,12 @@ The following order is recommended for completing the remaining work:
 4. **Lower Priority (P3)**
    - Port proven-tests-and-benches patterns to Ada
    - Complete Idris2 FFI implementation
-   - Complete Zig FFI implementation with actual unified-hexadeca-api
+   - Complete Zig FFI implementation with actual unified-api-adapter
 
 == Blockers and Dependencies
 
 === External Dependencies
-1. **unified-hexadeca-api**: Required for full Zig FFI implementation
+1. **unified-api-adapter**: Required for full Zig FFI implementation
 2. **Guix in Wolfi**: May require custom image or build-time installation
 3. **SELinux in container**: Requires container runtime support
 4. **Firewalld in container**: Requires systemd or alternative init

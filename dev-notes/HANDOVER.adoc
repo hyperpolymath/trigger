@@ -48,7 +48,7 @@ This document tracks the current state of work on the hyperpolymath/trigger repo
 
 === 3. Code Rewrite (PREVIOUSLY COMPLETED)
 * Rewrote code in Ada/SPARK as primary design
-* Used Zig for FFI with unified-hexadeca-api
+* Used Zig for FFI with unified-api-adapter
 * Used Idris2 for API definitions
 * No Python - pure Ada/SPARK + Zig FFI + Idris2 APIs
 

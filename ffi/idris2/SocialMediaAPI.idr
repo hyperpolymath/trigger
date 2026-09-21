@@ -280,4 +280,4 @@ toSocialError msg = PlatformError Telegram msg  -- Default, override per platfor
 -- must implement the SocialPlatform interface and use their respective
 -- Zig FFI bindings.
 --
--- The Zig FFI layer uses unified-hexadeca-api for consistency across platforms.
+-- The Zig FFI layer uses unified-api-adapter for consistency across platforms.

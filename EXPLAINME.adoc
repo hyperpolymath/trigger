@@ -119,7 +119,7 @@ Key features:
 
 The Zig FFI provides:
 
-* Telegram API bindings via unified-hexadeca-api
+* Telegram API bindings via unified-api-adapter
 * C-compatible interfaces for Ada
 * Memory-safe FFI operations
 * Error propagation across language boundary

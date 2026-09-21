@@ -1,16 +1,16 @@
 //  Telegram API Bindings for Trigger
 //  
-//  Uses unified-hexadeca-api for Telegram client functionality
+//  Uses unified-api-adapter for Telegram client functionality
 //  
 //  Original concept by 2nixx (T.me/NetworkCriminals)
 //  Zig bindings by hyperpolymath
 
 const std = @import("std");
-const hexadeca = @import("path:unified-hexadeca-api");  // Would reference actual path
+const unifiedApiAdapter = @import("path:unified-api-adapter");  // Would reference actual path
 
 //  Telegram client wrapper
 pub const TelegramClient = struct {
-    client: *hexadeca.TelegramClient,
+    client: *unifiedApiAdapter.TelegramClient,
     api_id: i32,
     api_hash: []const u8,
     session_name: []const u8,
@@ -18,7 +18,7 @@ pub const TelegramClient = struct {
     //  Initialize a new Telegram client
     pub fn init(allocator: std.mem.Allocator, api_id: i32, api_hash: []const u8, session_name: []const u8) !TelegramClient {
         var self = TelegramClient{
-            .client = try hexadeca.telegramClientInit(allocator, api_id, api_hash),
+            .client = try unifiedApiAdapter.telegramClientInit(allocator, api_id, api_hash),
             .api_id = api_id,
             .api_hash = api_hash,
             .session_name = session_name,
@@ -28,7 +28,7 @@ pub const TelegramClient = struct {
     
     //  Deinitialize client
     pub fn deinit(self: *TelegramClient) void {
-        hexadeca.telegramClientDestroy(self.client);
+        unifiedApiAdapter.telegramClientDestroy(self.client);
     }
     
     //  Start session with phone number
@@ -57,7 +57,7 @@ pub const TelegramClient = struct {
     }
     
     //  Get messages from a chat
-    pub fn getMessages(self: *TelegramClient, peer: []const u8, limit: i32) ![]hexadeca.Message {
+    pub fn getMessages(self: *TelegramClient, peer: []const u8, limit: i32) ![]unifiedApiAdapter.Message {
         return try self.client.getMessages(peer, limit);
     }
     
@@ -136,4 +136,4 @@ pub export fn telegram_client_is_authorized(client_ptr: [*c]*anyopaque) callconv
 }
 
 //  Note: In a real implementation, this would properly integrate with
-//  the unified-hexadeca-api which provides Telegram TDLib or MTProto bindings
+//  the unified-api-adapter which provides Telegram TDLib or MTProto bindings

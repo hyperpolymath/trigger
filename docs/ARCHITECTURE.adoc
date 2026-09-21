@@ -45,7 +45,7 @@ Trigger follows a layered architecture with clear separation of concerns:
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │   │
 │  │  │  Zig     │  │ Idris2   │  │  C Headers│           │   │
 │  │  │  (unified│  │  (API     │  │  (FFI     │           │   │
-│  │  │  hexadeca│  │   layer) │  │   bridge) │           │   │
+│  │  │  unified-api-adapter│  │   layer) │  │   bridge) │           │   │
 │  │  └──────────┘  └──────────┘  └──────────┘           │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -100,7 +100,7 @@ Handles Telegram reporting operations:
 * FloodWait handling
 * Statistics collection
 
-Uses Zig FFI via unified-hexadeca-api for actual Telegram API calls.
+Uses Zig FFI via unified-api-adapter for actual Telegram API calls.
 
 === Utilities (src/trigger/utils/)
 
@@ -114,7 +114,7 @@ Provides cross-cutting functionality:
 
 Provides foreign function interfaces:
 
-* `zig/telegram.zig`: Telegram API bindings using unified-hexadeca-api
+* `zig/telegram.zig`: Telegram API bindings using unified-api-adapter
 * `idris2/TelegramAPI.idr`: High-level, type-safe API abstractions
 
 The Zig code provides the actual Telegram client functionality, while the 
@@ -173,7 +173,7 @@ Rationale:
 1. User selects "Add Account" from menu
 2. Main application prompts for phone, API ID, API hash
 3. Session Manager calls Zig FFI to create TelegramClient
-4. Zig code uses unified-hexadeca-api to create session
+4. Zig code uses unified-api-adapter to create session
 5. Session data saved to file (optionally encrypted)
 6. Account added to manager's account list
 
@@ -248,7 +248,7 @@ trigger/
 
 * Zig runtime (for FFI)
 * Idris2 runtime (if used)
-* unified-hexadeca-api (Zig library)
+* unified-api-adapter (Zig library)
 
 === External Services
 
@@ -411,7 +411,7 @@ The containerisation includes the following security measures:
 == Future Enhancements
 
 * Full SPARK verification of critical components
-* Complete Zig FFI implementation with unified-hexadeca-api
+* Complete Zig FFI implementation with unified-api-adapter
 * Idris2 API layer with full functionality
 * Proper JSON parsing/serialization
 * Session encryption using SPARK-verified crypto

@@ -31,7 +31,7 @@ Original Features (as designed by 2nixx):
 
 Implementation Notes:
 - Core logic: Ada/SPARK for safety and verification
-- Telegram API bindings: Zig with unified-hexadeca-api
+- Telegram API bindings: Zig with unified-api-adapter
 - API layer abstractions: Idris2 for type safety
 
 Copyright and Licensing:

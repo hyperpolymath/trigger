@@ -10,7 +10,7 @@
 --     ↑ uses
 --   ffi/zig/telegram/telegram.zig (Zig FFI)
 --     ↑ uses
---   unified-hexadeca-api (Telegram client)
+--   unified-api-adapter (Telegram client)
 --
 -- Original concept by 2nixx (T.me/NetworkCriminals)
 -- Idris2 API by hyperpolymath

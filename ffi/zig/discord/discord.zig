@@ -1,6 +1,6 @@
 //  Discord API Bindings for Trigger
 //  
-//  Uses unified-hexadeca-api for Discord client functionality
+//  Uses unified-api-adapter for Discord client functionality
 //  via serenity (Rust) or discord-rs bindings through C ABI
 //  
 //  Original concept by 2nixx (T.me/NetworkCriminals)
@@ -14,8 +14,8 @@
 
 const std = @import("std");
 
-// Import unified-hexadeca-api for common utilities
-// const hexadeca = @import("path:unified-hexadeca-api");
+// Import unified-api-adapter for common utilities
+// const unifiedApiAdapter = @import("path:unified-api-adapter");
 
 // =============================================================================
 // DISCORD-SPECIFIC CONSTANTS
@@ -429,7 +429,7 @@ pub export fn discord_client_get_guild(
 // - or discord-rs via C bindings
 // - or a custom HTTP client using zig-http
 //
-// The unified-hexadeca-api would provide common utilities for:
+// The unified-api-adapter would provide common utilities for:
 // - HTTP client functionality
 // - JSON serialization/deserialization
 // - OAuth2 token management
