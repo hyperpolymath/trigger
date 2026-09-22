@@ -50,7 +50,7 @@ The user requested the following:
 ==== 3. Launcher Creation ✓
 - **Status**: COMPLETED
 - **Actions Taken**:
-  - Created `trigger-launcher.sh` following launcher-standard.a2ml v0.3.0
+  - Created `trigger-launcher.sh` following launcher-standard_praxis.deed v0.4.0
   - Implements all required modes:
     - `--start`, `--stop`, `--status`, `--auto` (runtime)
     - `--integ`, `--disinteg` (integration)

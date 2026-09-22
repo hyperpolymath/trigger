@@ -5,7 +5,7 @@
 # trigger-launcher.sh — hyperpolymath-compliant desktop launcher for Trigger
 #
 # Compliant with:
-#   - standards/launcher/launcher-standard.a2ml v0.3.0
+#   - standards/launcher/launcher-standard_praxis.deed v0.4.0
 #   - standards/docs/UX-standards/launcher-standard.adoc
 #   - standards/docs/UX-standards/LM-LA-LIFECYCLE-STANDARD.adoc
 #
@@ -15,7 +15,7 @@
 set -euo pipefail
 
 # =============================================================================
-# A2ML Metadata Block (required by launcher-standard.a2ml §a2ml-metadata-block)
+# Metadata Block (required by launcher-standard_praxis.deed (metadata-block ...))
 # =============================================================================
 # id: trigger-launcher
 # type: shell-script-launcher
@@ -24,7 +24,7 @@ set -euo pipefail
 # app-display: Trigger
 # app-url: https://github.com/hyperpolymath/trigger
 # app-description: Telegram channel reporting utility with multi-account management
-# standards-compliance: launcher-standard.a2ml v0.3.0
+# standards-compliance: launcher-standard_praxis.deed v0.4.0
 # modes: --start --stop --status --auto --integ --disinteg --help --version --debug --logs --tail
 # platforms: linux linux-wsl-detect macos
 # lifecycle-phases-covered: runtime integration error-visibility
@@ -44,7 +44,7 @@ VERSION="1.0.0"
 BUILD_SHA_SHORT="$(cd "$REPO_DIR" && git rev-parse --short HEAD 2>/dev/null || echo "dev")"
 PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
-# Resolve desktop tools directory using ladder from launcher-standard.a2ml
+# Resolve desktop tools directory using ladder from launcher-standard_praxis.deed (resolution (desktop-tools-search ...))
 RESOLVE_DESKTOP_TOOLS() {
     local candidates=(
         "${HP_DESKTOP_TOOLS:-}"
@@ -74,12 +74,12 @@ if [[ -f "$DESKTOP_TOOLS_DIR/keepopen.sh" ]]; then
 fi
 
 # =============================================================================
-# Default Mode (launcher-standard.a2ml §default-mode)
+# Default Mode (launcher-standard_praxis.deed (default-mode ...))
 # =============================================================================
 DEFAULT_MODE="--auto"
 
 # =============================================================================
-# Required Modes (launcher-standard.a2ml §required-modes)
+# Required Modes (launcher-standard_praxis.deed (required-modes ...))
 # =============================================================================
 
 # Runtime modes
@@ -97,7 +97,7 @@ MODE_HELP="--help"
 MODE_VERSION="--version"
 
 # =============================================================================
-# Aliases (launcher-standard.a2ml §aliases)
+# Aliases (launcher-standard_praxis.deed (aliases ...))
 # =============================================================================
 ALIASES=(
     "--browser:--auto"
@@ -119,14 +119,14 @@ RESOLVE_ALIAS() {
 }
 
 # =============================================================================
-# Optional Modes (launcher-standard.a2ml §optional-modes)
+# Optional Modes (launcher-standard_praxis.deed (optional-modes ...))
 # =============================================================================
 MODE_DEBUG="--debug"
 MODE_LOGS="--logs"
 MODE_TAIL="--tail"
 
 # =============================================================================
-# Version Output (launcher-standard.a2ml §version-output)
+# Version Output (launcher-standard_praxis.deed (version-output ...))
 # =============================================================================
 VERSION_OUTPUT() {
     # Machine-greppable first line
@@ -135,11 +135,11 @@ VERSION_OUTPUT() {
     echo "Repository: ${APP_URL}"
     echo "Description: ${APP_DESCRIPTION}"
     echo "Launcher: ${APP_NAME}-launcher ${VERSION}"
-    echo "Standards Compliance: launcher-standard.a2ml v0.3.0"
+    echo "Standards Compliance: launcher-standard_praxis.deed v0.4.0"
 }
 
 # =============================================================================
-# Fallback Ladder (launcher-standard.a2ml §fallback-ladder)
+# Fallback Ladder (launcher-standard_praxis.deed (fallback-ladder ...))
 # =============================================================================
 WRAPPER="keepopen.sh"
 FINAL_SHELL="bash -l at REPO_DIR"
@@ -156,7 +156,7 @@ STAGE_SHELL_COLOUR="green"
 STAGE_SHELL_BEHAVIOUR="exec-bash-login-at-repo-dir"
 
 # =============================================================================
-# Runtime Configuration (launcher-standard.a2ml §runtime)
+# Runtime Configuration (launcher-standard_praxis.deed (runtime ...))
 # =============================================================================
 BACKGROUND="nohup"
 
@@ -195,7 +195,7 @@ GET_STARTUP_COMMAND() {
 }
 
 # =============================================================================
-# Browser Launch (launcher-standard.a2ml §browser-launch)
+# Browser Launch (launcher-standard_praxis.deed (browser-launch ...))
 # =============================================================================
 OPEN_BROWSER() {
     local url="$1"
@@ -244,7 +244,7 @@ OPEN_BROWSER() {
 }
 
 # =============================================================================
-# Error Visibility (launcher-standard.a2ml §error-visibility)
+# Error Visibility (launcher-standard_praxis.deed (error-visibility ...))
 # =============================================================================
 REFERENCE_IMPL="launcher/gui-error.sh"
 GUI_DIALOG_CHAIN=("kdialog" "zenity" "notify-send" "xmessage")
@@ -291,7 +291,7 @@ GUI_ERROR() {
 }
 
 # =============================================================================
-# Integration Configuration (launcher-standard.a2ml §integration)
+# Integration Configuration (launcher-standard_praxis.deed (integration ...))
 # =============================================================================
 
 # Linux integration
@@ -316,7 +316,7 @@ WINDOWS_BIN_DIR="$HOME/.local/bin"
 WINDOWS_SHORTCUT_PATTERN="{app-display}.lnk"
 
 # =============================================================================
-# Integrity Verification (launcher-standard.a2ml §integrity)
+# Integrity Verification (launcher-standard_praxis.deed (integrity ...))
 # =============================================================================
 VERIFICATION_TOOL="verify-desktop-integrity.sh"
 TOOL_NAME="verify-desktop-integrity.sh"
@@ -339,7 +339,7 @@ GET_VERIFICATION_TOOL() {
 }
 
 # =============================================================================
-# Soft Attach (launcher-standard.a2ml §soft-attach)
+# Soft Attach (launcher-standard_praxis.deed (soft-attach ...))
 # =============================================================================
 REFERENCE_IMPL_SOFT_ATTACH="launcher/soft-attach.sh"
 
@@ -792,7 +792,7 @@ DO_DISINTEG() {
     
     echo "[DISINTEG] Removing ${APP_DISPLAY} from desktop environment..."
     
-    # Remove items (launcher-standard.a2ml §disinteg.remove)
+    # Remove items (launcher-standard_praxis.deed (disinteg :remove ...))
     local items_to_remove=(
         "$desktop_file"
         "$icon_file"
